@@ -1,10 +1,13 @@
 import { Button } from "@/components/Button";
+import { useLogin } from "@/hooks/auth/useLogin";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Chrome, Lock, Mail } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -13,9 +16,21 @@ import {
 } from "react-native";
 
 export default function Login() {
+  const { login, loading } = useLogin();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+
+  const handleLogin = async () => {
+    const { success, error } = await login(email, password);
+
+    if (success) {
+      router.replace("/intro");
+    }  
+    else {
+      Alert.alert("Error", error)
+    }
+  };
 
   return (
     <LinearGradient
@@ -49,7 +64,7 @@ export default function Login() {
         style={styles.card}
       >
         <Text style={styles.cardTitle}>
-          {isLogin ? "Iniciar sesión" : "Crear cuenta"}
+          Iniciar sesión
         </Text>
 
         {/* Email Input */}
@@ -91,10 +106,11 @@ export default function Login() {
           fullWidth
           variant="primary"
           size="lg"
-          onClick={() => router.replace("/intro")}
+          onClick={handleLogin}
+          disabled={loading}
           style={styles.mb3}
         >
-          {isLogin ? "Iniciar sesión" : "Crear cuenta"}
+          {loading ? <ActivityIndicator /> : "Iniciar sesión"}
         </Button>
 
         {/* Google Button */}
@@ -104,31 +120,28 @@ export default function Login() {
           size="lg"
           icon={<Chrome size={20} color="#111827" />}
           style={styles.mb4}
+          disabled={loading}
         >
           Continuar con Google
         </Button>
 
         {/* Links */}
         <View style={styles.linksContainer}>
-          {isLogin && (
-            <TouchableOpacity>
-              <Text style={styles.forgotPassword}>
-                ¿Olvidaste tu contraseña?
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+          <TouchableOpacity disabled={loading}>
+            <Text style={styles.forgotPassword}>
+              ¿Olvidaste tu contraseña?
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity disabled={loading} onPress={() => router.replace("/intro")}>
             <Text style={styles.switchAuth}>
-              {isLogin
-                ? "¿No tienes cuenta? Regístrate"
-                : "¿Ya tienes cuenta? Inicia sesión"}
+              ¿No tienes cuenta? Regístrate
             </Text>
           </TouchableOpacity>
         </View>
       </MotiView>
 
-      {/* Decorative Elements */}
+      {/* Decorative elements */}
       <MotiView
         animate={{
           translateY: [0, 10, 0],
@@ -149,6 +162,7 @@ export default function Login() {
     </LinearGradient>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
