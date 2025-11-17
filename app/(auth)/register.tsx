@@ -4,7 +4,7 @@ import { useAsyncAction } from "@/hooks/useAsyncAction";
 import { validate } from "@/utils/auth/validate";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Chrome, Lock, Mail } from "lucide-react-native";
+import { Chrome, Lock, Mail, User } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useContext, useState } from "react";
 import {
@@ -16,31 +16,41 @@ import {
   View
 } from "react-native";
 
-export default function Login() {
+export default function Register() {
   const { loading, run } = useAsyncAction();
-  const { login } = useContext(AuthContext);
+  const { register } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     email: "",
+    name: "",
+    lastName: "",
     password: "",
   });
 
-  const handleChange = (field: "email" | "password", value: string) => {
+  const handleChange = (field: keyof typeof form, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     const error = validate(form);
     if (error) {
       return Alert.alert("Error", error);
     }
 
     run(async () => {
-      await login(form.email.trim(), form.password.trim());
+      await register(
+        {
+          email: form.email.trim(),
+          name: form.name.trim(),
+          lastName: form.lastName.trim(),
+          id: ''
+        },
+        form.password
+      );
       router.replace("/intro");
-    }).catch((err) => {
-      Alert.alert("Error", err.message || "No se pudo iniciar sesión");
-    });
+    }).catch((err) =>
+      Alert.alert("Error", err.message || "No se pudo crear la cuenta")
+    );
   };
 
   return (
@@ -60,11 +70,6 @@ export default function Login() {
         <View style={styles.logoCircle}>
           <Text style={styles.logoK}>K</Text>
         </View>
-
-        <Text style={styles.logoTitle}>KOINS</Text>
-        <Text style={styles.logoSubtitle}>
-          Control financiero inteligente
-        </Text>
       </MotiView>
 
       {/* Form Card */}
@@ -74,11 +79,39 @@ export default function Login() {
         transition={{ delay: 300 }}
         style={styles.card}
       >
-        <Text style={styles.cardTitle}>
-          Iniciar sesión
-        </Text>
+        <Text style={styles.cardTitle}>Registro</Text>
 
-        {/* Email Input */}
+        {/* Name */}
+        <View style={styles.mb4}>
+          <Text style={styles.label}>Nombre</Text>
+          <View style={styles.inputWrapper}>
+            <User size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              value={form.name}
+              onChangeText={(v) => handleChange("name", v)}
+              placeholder="Tu nombre"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            />
+          </View>
+        </View>
+
+        {/* Last Name */}
+        <View style={styles.mb4}>
+          <Text style={styles.label}>Apellido</Text>
+          <View style={styles.inputWrapper}>
+            <User size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              value={form.lastName}
+              onChangeText={(v) => handleChange("lastName", v)}
+              placeholder="Tu apellido"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            />
+          </View>
+        </View>
+
+        {/* Email */}
         <View style={styles.mb4}>
           <Text style={styles.label}>Correo electrónico</Text>
           <View style={styles.inputWrapper}>
@@ -95,7 +128,7 @@ export default function Login() {
           </View>
         </View>
 
-        {/* Password Input */}
+        {/* Password */}
         <View style={styles.mb6}>
           <Text style={styles.label}>Contraseña</Text>
           <View style={styles.inputWrapper}>
@@ -112,19 +145,19 @@ export default function Login() {
           </View>
         </View>
 
-        {/* Login Button */}
+        {/* Register Button */}
         <Button
           fullWidth
           variant="primary"
           size="lg"
-          onClick={handleLogin}
+          onClick={handleRegister}
           style={styles.mb3}
           loading={loading}
         >
-          Iniciar sesión
+          Crear cuenta
         </Button>
 
-        {/* Google Button */}
+        {/* Google */}
         <Button
           fullWidth
           variant="outline"
@@ -132,47 +165,33 @@ export default function Login() {
           icon={<Chrome size={20} color="#111827" />}
           style={styles.mb4}
         >
-          Continuar con Google
+          Registrarse con Google
         </Button>
 
-        {/* Links */}
         <View style={styles.linksContainer}>
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>
-              ¿Olvidaste tu contraseña?
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push("/register")}>
+          <TouchableOpacity onPress={() => router.push("/login")}>
             <Text style={styles.switchAuth}>
-              ¿No tienes cuenta? Regístrate
+              ¿Ya tienes cuenta? Inicia sesión
             </Text>
           </TouchableOpacity>
         </View>
       </MotiView>
 
-      {/* Decorative Elements */}
+      {/* Decorations */}
       <MotiView
-        animate={{
-          translateY: [0, 10, 0],
-          rotate: ["0deg", "5deg", "0deg"],
-        }}
+        animate={{ translateY: [0, 10, 0], rotate: ["0deg", "5deg", "0deg"] }}
         transition={{ duration: 3000, loop: true }}
         style={styles.decorationTop}
       />
 
       <MotiView
-        animate={{
-          translateY: [0, -10, 0],
-          rotate: ["0deg", "-5deg", "0deg"],
-        }}
+        animate={{ translateY: [0, -10, 0], rotate: ["0deg", "-5deg", "0deg"] }}
         transition={{ duration: 4000, loop: true }}
         style={styles.decorationBottom}
       />
     </LinearGradient>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -185,7 +204,7 @@ const styles = StyleSheet.create({
   },
 
   logo: { 
-    marginBottom: 32, 
+    marginBottom: 24, 
     alignItems: "center"
   },
 
@@ -207,19 +226,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 40,
     fontWeight: "bold",
-  },
-
-  logoTitle: {
-    color: "white",
-    fontSize: 32,
-    textAlign: "center",
-  },
-
-  logoSubtitle: {
-    color: "rgba(255,255,255,0.8)",
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: 8,
   },
 
   card: {
