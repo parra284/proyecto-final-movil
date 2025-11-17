@@ -1,45 +1,45 @@
-import React, { ReactNode, useRef } from "react";
+import React, { ReactNode, useRef } from 'react';
 import {
   ActivityIndicator,
   Animated,
   Pressable,
   StyleSheet,
   Text,
-  View,
-} from "react-native";
+  View
+} from 'react-native';
 
 interface ButtonProps {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   onClick?: () => void;
   icon?: ReactNode;
   fullWidth?: boolean;
+  loading?: boolean;      
+  disabled?: boolean;     
   style?: any;
-  disabled?: boolean;
-  loading?: boolean;
 }
 
 export function Button({
   children,
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   onClick,
   icon,
   fullWidth = false,
-  style,
-  disabled = false,
   loading = false,
+  disabled = false,
+  style
 }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
-  const isDisabled = disabled || loading;
+  const isDisabled = loading || disabled;
 
   const handlePressIn = () => {
     if (isDisabled) return;
     Animated.spring(scale, {
       toValue: 0.98,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start();
   };
 
@@ -48,7 +48,7 @@ export function Button({
     Animated.spring(scale, {
       toValue: 1,
       friction: 5,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start();
   };
 
@@ -59,7 +59,7 @@ export function Button({
     ghost: styles.ghost,
   };
 
-  const disabledVariantStyles = {
+  const disabledStyles = {
     primary: styles.primaryDisabled,
     secondary: styles.secondaryDisabled,
     outline: styles.outlineDisabled,
@@ -72,39 +72,43 @@ export function Button({
     lg: styles.lg,
   };
 
+  // Color dinámico del loader
+  const loaderColor =
+    variant === 'primary' || variant === 'secondary'
+      ? '#FFF'
+      : '#111827';
+
   return (
     <Animated.View
       style={{
         transform: [{ scale }],
-        width: fullWidth ? "100%" : undefined,
-        opacity: isDisabled ? 0.6 : 1,
+        width: fullWidth ? '100%' : undefined,
+        opacity: isDisabled ? 0.7 : 1
       }}
     >
       <Pressable
-        onPress={isDisabled ? undefined : onClick}
+        disabled={isDisabled}
+        onPress={onClick}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        disabled={isDisabled}
         style={[
           styles.base,
-          isDisabled
-            ? disabledVariantStyles[variant]
-            : variantStyles[variant],
+          isDisabled ? disabledStyles[variant] : variantStyles[variant],
           sizeStyles[size],
           fullWidth && styles.fullWidth,
-          style,
+          style
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={variant === "primary" ? "white" : "#111827"} />
+          <ActivityIndicator size="small" color={loaderColor} />
         ) : (
           <>
             {icon && <View style={styles.iconContainer}>{icon}</View>}
             <Text
               style={[
                 styles.text,
-                variant === "primary" && styles.textPrimary,
-                variant === "secondary" && styles.textSecondary,
+                variant === 'primary' && styles.textPrimary,
+                variant === 'secondary' && styles.textSecondary
               ]}
             >
               {children}

@@ -1,35 +1,46 @@
 import { Button } from "@/components/Button";
-import { useLogin } from "@/hooks/auth/useLogin";
+import { AuthContext } from "@/contexts/AuthContext";
+import { useAsyncAction } from "@/hooks/useAsyncAction";
+import { validate } from "@/utils/auth/validate";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Chrome, Lock, Mail } from "lucide-react-native";
 import { MotiView } from "moti";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function Login() {
-  const { login, loading } = useLogin();
+  const { loading, run } = useAsyncAction();
+  const { login } = useContext(AuthContext);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (field: "email" | "password", value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleLogin = async () => {
-    const { success, error } = await login(email, password);
-
-    if (success) {
-      router.replace("/intro");
-    }  
-    else {
-      Alert.alert("Error", error)
+    const error = validate(form.email, form.password);
+    if (error) {
+      return Alert.alert("Error", error);
     }
+
+    run(async () => {
+      await login(form.email, form.password);
+      router.replace("/intro");
+    }).catch((err) => {
+      Alert.alert("Error", err.message || "No se pudo iniciar sesión");
+    });
   };
 
   return (
@@ -73,8 +84,8 @@ export default function Login() {
           <View style={styles.inputWrapper}>
             <Mail size={20} color="#9CA3AF" style={styles.inputIcon} />
             <TextInput
-              value={email}
-              onChangeText={setEmail}
+              value={form.email}
+              onChangeText={(v) => handleChange("email", v)}
               placeholder="tu@email.com"
               placeholderTextColor="#9CA3AF"
               keyboardType="email-address"
@@ -90,8 +101,8 @@ export default function Login() {
           <View style={styles.inputWrapper}>
             <Lock size={20} color="#9CA3AF" style={styles.inputIcon} />
             <TextInput
-              value={password}
-              onChangeText={setPassword}
+              value={form.password}
+              onChangeText={(v) => handleChange("password", v)}
               placeholder="••••••••"
               placeholderTextColor="#9CA3AF"
               secureTextEntry
@@ -107,10 +118,10 @@ export default function Login() {
           variant="primary"
           size="lg"
           onClick={handleLogin}
-          disabled={loading}
           style={styles.mb3}
+          loading={loading}
         >
-          {loading ? <ActivityIndicator /> : "Iniciar sesión"}
+          Iniciar sesión
         </Button>
 
         {/* Google Button */}
@@ -120,20 +131,19 @@ export default function Login() {
           size="lg"
           icon={<Chrome size={20} color="#111827" />}
           style={styles.mb4}
-          disabled={loading}
         >
           Continuar con Google
         </Button>
 
         {/* Links */}
         <View style={styles.linksContainer}>
-          <TouchableOpacity disabled={loading}>
+          <TouchableOpacity>
             <Text style={styles.forgotPassword}>
               ¿Olvidaste tu contraseña?
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity disabled={loading} onPress={() => router.replace("/intro")}>
+
+          <TouchableOpacity>
             <Text style={styles.switchAuth}>
               ¿No tienes cuenta? Regístrate
             </Text>
@@ -141,7 +151,7 @@ export default function Login() {
         </View>
       </MotiView>
 
-      {/* Decorative elements */}
+      {/* Decorative Elements */}
       <MotiView
         animate={{
           translateY: [0, 10, 0],
@@ -175,8 +185,8 @@ const styles = StyleSheet.create({
   },
 
   logo: { 
-    marginBottom: 32,
-    alignItems: "center" 
+    marginBottom: 32, 
+    alignItems: "center"
   },
 
   logoCircle: {
