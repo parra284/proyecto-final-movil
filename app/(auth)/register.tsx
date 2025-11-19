@@ -47,7 +47,7 @@ export default function Register() {
         },
         form.password
       );
-      router.replace("/intro");
+      router.replace("/(main)/home");
     }).catch((err) =>
       Alert.alert("Error", err.message || "No se pudo crear la cuenta")
     );
