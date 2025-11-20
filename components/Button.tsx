@@ -17,7 +17,6 @@ interface ButtonProps {
   fullWidth?: boolean;
   loading?: boolean;      
   disabled?: boolean;     
-  style?: any;
 }
 
 export function Button({
@@ -28,8 +27,7 @@ export function Button({
   icon,
   fullWidth = false,
   loading = false,
-  disabled = false,
-  style
+  disabled = false
 }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -95,8 +93,7 @@ export function Button({
           styles.base,
           isDisabled ? disabledStyles[variant] : variantStyles[variant],
           sizeStyles[size],
-          fullWidth && styles.fullWidth,
-          style
+          fullWidth && styles.fullWidth
         ]}
       >
         {loading ? (
@@ -128,6 +125,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    marginBottom: 10
   },
 
   /* Variants */

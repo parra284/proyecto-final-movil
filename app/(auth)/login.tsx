@@ -118,7 +118,6 @@ export default function Login() {
           variant="primary"
           size="lg"
           onClick={handleLogin}
-          style={styles.mb3}
           loading={loading}
         >
           Iniciar sesión
@@ -130,7 +129,6 @@ export default function Login() {
           variant="outline"
           size="lg"
           icon={<Chrome size={20} color="#111827" />}
-          style={styles.mb4}
         >
           Continuar con Google
         </Button>
