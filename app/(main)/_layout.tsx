@@ -1,11 +1,15 @@
+import { AuthContext } from '@/contexts/AuthContext';
+import { DataProvider } from '@/contexts/DataContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { LinearGradient } from "expo-linear-gradient";
 import { Tabs, useSegments } from "expo-router";
 import { MotiView } from 'moti';
-import React from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 export default function LayoutMain() {
+    const { user } = useContext(AuthContext)
+    
     // Detecta la screen activa
     const segments = useSegments();
     const current = segments[1] || "home";
@@ -20,7 +24,7 @@ export default function LayoutMain() {
         }
         > = {
             home: {
-                title: "Hola, Juanita 👋",
+                title: `Hola, ${user?.name} 👋`,
                 subtitle: "Tu balance general",
                 gradient: ["#00C48C", "#00A077"] as const,
             },
@@ -52,7 +56,7 @@ export default function LayoutMain() {
     const { title, subtitle, gradient } = titles[current] || titles.home;
 
     return (
-        <>
+        <DataProvider>
             {/* Header dinámico con gradiente */}
             <LinearGradient
                 colors={gradient}
@@ -161,7 +165,7 @@ export default function LayoutMain() {
                     }}
                 />
             </Tabs>
-        </>
+        </DataProvider>
     );
 }
 

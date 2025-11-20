@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -11,16 +11,29 @@ import { ArrowDownToLine, Coffee, Plus, ShoppingBag, TrendingUp, Zap } from 'luc
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { AuthContext } from '@/contexts/AuthContext';
+import { DataContext } from '@/contexts/DataContext';
+import { Expense } from '@/types/data.types';
 
-interface DashboardScreenProps {
-  onNavigate: (screen: string) => void;
-  onOpenChat: () => void;
-}
+export default function DashboardScreen() {
+  const { user } = useContext(AuthContext);
+  const { getExpenses } = useContext(DataContext);
 
-export default function DashboardScreen({
-  onNavigate,
-  onOpenChat,
-}: DashboardScreenProps) {
+  const [expenses, setExpenses] = useState<Expense[]>([])
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user?.id) return;
+      const data = await getExpenses(user.id);
+      setExpenses(data);
+    };
+
+    loadData();
+  }, [user?.id]);
+
+
+  const onNavigate = () => {}
+
   const transactions = [
     {
       id: 1,
@@ -104,62 +117,75 @@ export default function DashboardScreen({
         {/* Transactions */}
         <View style={styles.transactionsHeaderWrapper}>
           <Text style={styles.transactionsTitle}>Transacciones recientes</Text>
-          <Pressable onPress={() => onNavigate('history')}>
+          <Pressable onPress={() => onNavigate()}>
             <Text style={styles.seeAll}>Ver todo</Text>
           </Pressable>
         </View>
 
         <View style={styles.transactionsList}>
-          {transactions.map((transaction, index) => (
-            <Card key={transaction.id} delay={0.4 + index * 0.1} hover>
-              <View style={styles.transactionItem}>
-                <View
-                  style={[
-                    styles.transactionIconCircle,
-                    { backgroundColor: transaction.color + '20' },
-                  ]}
-                >
-                  <transaction.icon size={24} color={transaction.color} />
-                </View>
+          {expenses.map((expense, index) => {
+            const isFactura = expense.expensetype.type === "Factura" || expense.expensetype.type === "Factura-E";
 
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionName} numberOfLines={1}>
-                    {transaction.name}
-                  </Text>
+            // Opcional: asignar ícono por categoría
+            const CategoryIcon = {
+              Alimentos: ShoppingBag,
+              Servicios: Zap,
+              Entretenimiento: Coffee,
+            }[expense.category ?? "Alimentos"] || ShoppingBag;
 
-                  <View style={styles.transactionMeta}>
-                    <Text style={styles.transactionCategory}>
-                      {transaction.category}
+            const color = isFactura ? "#00C48C" : "#6B7280";
+
+            return (
+              <Card key={expense.id} delay={0.4 + index * 0.1} hover>
+                <View style={styles.transactionItem}>
+                  
+                  {/* ICON */}
+                  <View
+                    style={[
+                      styles.transactionIconCircle,
+                      { backgroundColor: color + "20" },
+                    ]}
+                  >
+                    <CategoryIcon size={24} color={color} />
+                  </View>
+
+                  {/* INFO */}
+                  <View style={styles.transactionInfo}>
+                    <Text style={styles.transactionName} numberOfLines={1}>
+                      {expense.description}
                     </Text>
 
-                    <View
-                      style={[
-                        styles.transactionTag,
-                        transaction.type === 'Factura'
-                          ? styles.tagFactura
-                          : styles.tagManual,
-                      ]}
-                    >
-                      <Text
+                    <View style={styles.transactionMeta}>
+                      <Text style={styles.transactionCategory}>
+                        {expense.category ?? "Sin categoría"}
+                      </Text>
+
+                      <View
                         style={[
-                          styles.tagText,
-                          transaction.type === 'Factura'
-                            ? styles.tagTextFactura
-                            : styles.tagTextManual,
+                          styles.transactionTag,
+                          isFactura ? styles.tagFactura : styles.tagManual,
                         ]}
                       >
-                        {transaction.type}
-                      </Text>
+                        <Text
+                          style={[
+                            styles.tagText,
+                            isFactura ? styles.tagTextFactura : styles.tagTextManual,
+                          ]}
+                        >
+                          {expense.expensetype.type}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
 
-                <Text style={styles.transactionAmount}>
-                  ${Math.abs(transaction.amount).toFixed(2)}
-                </Text>
-              </View>
-            </Card>
-          ))}
+                  {/* AMOUNT */}
+                  <Text style={styles.transactionAmount}>
+                    ${expense.value.toFixed(2)}
+                  </Text>
+                </View>
+              </Card>
+            );
+          })}
         </View>
 
         {/* Action Buttons */}
