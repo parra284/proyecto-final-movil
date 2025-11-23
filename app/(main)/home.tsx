@@ -7,13 +7,14 @@ import {
   View
 } from 'react-native';
 
-import { ArrowDownToLine, Coffee, Plus, ShoppingBag, TrendingUp, Zap } from 'lucide-react-native';
+import { ArrowDownToLine, Plus, ShoppingBag, TrendingUp } from 'lucide-react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import TransactionForm from '@/components/TransactionForm';
 import { AuthContext } from '@/contexts/AuthContext';
 import { DataContext } from '@/contexts/DataContext';
+import { CATEGORIES } from '@/types/categories';
 import { Transaction, UserStats } from '@/types/data.types';
 
 export default function DashboardScreen() {
@@ -116,12 +117,9 @@ export default function DashboardScreen() {
               : transaction.expensetype?.name ?? "Gasto";
 
             // Ícono según categoría (igual a tu código)
-            const CategoryIcon =
-              {
-                Alimentos: ShoppingBag,
-                Servicios: Zap,
-                Entretenimiento: Coffee,
-              }[transaction.category ?? "Alimentos"] || ShoppingBag;
+            const CategoryIcon = CATEGORIES[isIncome ? "income" : "expense"]
+    .find(c => c.key === transaction.category)?.icon || ShoppingBag;
+
 
             return (
               <Card key={transaction.id} delay={0.4 + index * 0.1} hover>

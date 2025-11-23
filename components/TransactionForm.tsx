@@ -1,4 +1,6 @@
 import { Button } from "@/components/Button";
+import { CATEGORIES } from "@/types/categories";
+import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { Modal, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -60,12 +62,15 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
             onChangeText={setValue}
           />
 
-          <TextInput
-            placeholder="Categoría"
-            style={styles.input}
-            value={category}
-            onChangeText={setCategory}
-          />
+            <Picker
+            selectedValue={category}
+            onValueChange={(v: any) => setCategory(v)}
+            >
+            {CATEGORIES[presetType].map((c) => (
+                <Picker.Item key={c.key} label={c.key} value={c.key} />
+            ))}
+            </Picker>
+
 
           {presetType === "expense" && (
             <TextInput
