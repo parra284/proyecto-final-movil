@@ -1,9 +1,10 @@
 import {
-    createProfile,
-    fetchProfile,
-    signIn,
-    signUp,
-    updateUserProfile,
+  createProfile,
+  fetchProfile,
+  signIn,
+  signUp,
+  updateUserAvatar,
+  updateUserProfileData
 } from "@/services/authService";
 import { User } from "@/types/auth.types";
 import { createContext, useState } from "react";
@@ -12,7 +13,8 @@ interface AuthContextProps {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (user: User, password: string) => Promise<void>;
-  updateProfile: (profileData: Partial<User>, avatarUri?: string) => Promise<void>;
+  updateImage: (avatarUri: string) => Promise<void>;
+  updateData: (profileData: Partial<User>) => Promise<void>;
 }
 
 export const AuthContext = createContext({} as AuthContextProps);
@@ -35,14 +37,19 @@ export const AuthProvider = ({ children }: any) => {
     setUser(profile);
   };
 
-  const updateProfile = async (profileData: Partial<User>, avatarUri?: string) => {
-    if (!user) return;
-    const updated = await updateUserProfile(user, profileData, avatarUri);
-    setUser(updated);
+  const updateImage = async(avatarUri: string) => {
+      if (!user) return
+      await updateUserAvatar(user, avatarUri);
   };
 
+  const updateData = async(profileData: Partial<User>) => {
+      if (!user) return
+      await updateUserProfileData(user, profileData);
+  }
+
+
   return (
-    <AuthContext.Provider value={{ user, login, register, updateProfile }}>
+    <AuthContext.Provider value={{ user, login, register, updateImage, updateData }}>
       {children}
     </AuthContext.Provider>
   );

@@ -47,11 +47,26 @@ export const createProfile = async (user: User, userId: string) => {
   if (error) throw error;
 };
 
-export const updateUserProfile = async (
+// Actualiza los datos generales del usuario (nombre, email, etc.)
+export const updateUserProfileData = async (
   user: User,
-  profileData: Partial<User>,
-  avatarUri?: string
+  profileData: Partial<User>
 ) => {
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      ...profileData,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+
+  if (error) throw error;
+
+  return { ...user, ...profileData };
+};
+
+// Actualiza únicamente la imagen de perfil
+export const updateUserAvatar = async (user: User, avatarUri: string) => {
   let avatar_url = user.avatar_url;
 
   if (avatarUri && !avatarUri.startsWith("http")) {
@@ -73,16 +88,17 @@ export const updateUserProfile = async (
 
     avatar_url = data.publicUrl;
 
+    // Borra la antigua imagen si existe
     if (user.avatar_url) {
       const oldPath = user.avatar_url.split("/object/public/avatars/")[1];
       await supabase.storage.from("avatars").remove([oldPath]);
     }
   }
 
+  // Actualiza el perfil con la nueva URL
   const { error } = await supabase
     .from("profiles")
     .update({
-      ...profileData,
       avatar_url,
       updated_at: new Date().toISOString(),
     })
@@ -90,5 +106,5 @@ export const updateUserProfile = async (
 
   if (error) throw error;
 
-  return { ...user, ...profileData, avatar_url };
+  return { ...user, avatar_url };
 };

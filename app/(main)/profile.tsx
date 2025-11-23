@@ -1,4 +1,5 @@
 // app/(main)/profile.tsx
+import * as ImagePicker from 'expo-image-picker';
 import {
   Bell,
   Camera,
@@ -9,8 +10,10 @@ import {
   Target,
   User,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
+  Alert,
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -21,10 +24,32 @@ import {
 
 // AJUSTA LA RUTA SEGÚN TU PROYECTO
 import { Card } from "@/components/Card";
+import ModalCamera from "@/components/ModalCamera";
+import { AuthContext } from "@/contexts/AuthContext";
 
 const Profile = () => {
+  const { user, updateImage } = useContext(AuthContext);
+  const [avatar, setAvatar] = useState(user?.avatar_url);
+
+  const [cameraVisible, setCameraVisible] = useState(false);
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (!avatar) return;
+
+    const sendImage = async () => {
+      try {
+        await updateImage(avatar);
+      } catch (error) {
+        console.error("Error actualizando imagen:", error);
+      }
+    };
+
+    sendImage();
+  }, [avatar]);
+
 
   const settings = [
     {
@@ -53,6 +78,35 @@ const Profile = () => {
     },
   ];
 
+  const selectImage = () => {
+    Alert.alert(
+      'Cambiar foto de perfil',
+      'Selecciona una opción',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cámara', onPress: () => setCameraVisible(true) },
+        { text: 'Galería', onPress: () => pickImage()},
+      ]
+    );
+  };
+
+  const handleCapture = (uri: string) => {
+    setAvatar(uri);
+  }; 
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
   const handleLogout = () => {
     // Aquí conectas tu lógica real de cierre de sesión (Supabase, etc.)
     console.log("Cerrar sesión");
@@ -75,13 +129,16 @@ const Profile = () => {
                 {/* Avatar */}
                 <View style={styles.avatarWrapper}>
                   <View style={styles.avatarCircle}>
-                    <Text style={styles.avatarInitial}>J</Text>
+                    <Image
+                      source={{uri: avatar}}
+                      style={styles.avatarImage}
+                    />
                   </View>
 
                   <Pressable
                     style={styles.avatarCameraButton}
                     onPress={() => {
-                      // lógica para cambiar foto
+                      selectImage();
                     }}
                   >
                     <Camera size={16} color="#FFFFFF" />
@@ -89,8 +146,8 @@ const Profile = () => {
                 </View>
 
                 {/* Nombre + correo */}
-                <Text style={styles.profileName}>Juanita González</Text>
-                <Text style={styles.profileEmail}>juanita@email.com</Text>
+                <Text style={styles.profileName}>{user?.name} {user?.lastName}</Text>
+                <Text style={styles.profileEmail}>{user?.email}</Text>
 
                 {/* Stats */}
                 <View style={styles.statsRow}>
@@ -250,6 +307,11 @@ const Profile = () => {
 
           <View style={{ height: 30 }} />
         </ScrollView>
+        {cameraVisible && (
+          <ModalCamera 
+          onClose={() => setCameraVisible(false)}
+          onCapture={handleCapture}/>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -315,6 +377,11 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "700",
     color: "#ECFEFF",
+  },
+  avatarImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
   },
   avatarCameraButton: {
     position: "absolute",
