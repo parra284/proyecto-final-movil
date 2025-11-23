@@ -16,8 +16,9 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { DataContext } from '@/contexts/DataContext';
 import { CATEGORIES } from '@/types/categories';
 import { Transaction, UserStats } from '@/types/data.types';
+import { router } from 'expo-router';
 
-export default function DashboardScreen() {
+export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const { getTransactions, getUserStats, createTransaction } = useContext(DataContext);
 
@@ -36,7 +37,7 @@ export default function DashboardScreen() {
       if (!user?.id) return;
       const statsData = await getUserStats(user.id);
       setStats(statsData)
-      const transData = await getTransactions(user.id);
+      const transData = await getTransactions(user.id, { daily: true });
       setTransactions(transData);
     };
 
@@ -44,7 +45,9 @@ export default function DashboardScreen() {
   }, [user?.id]);
 
 
-  const onNavigate = () => {}
+  const onNavigate = () => {
+    router.push("/(main)/home/transactions")
+  }
 
   return (
     <View style={styles.container}>

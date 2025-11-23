@@ -2,17 +2,22 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { DataProvider } from '@/contexts/DataContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { LinearGradient } from "expo-linear-gradient";
-import { Tabs, useSegments } from "expo-router";
+import { Tabs, useRouter, useSegments } from "expo-router";
 import { MotiView } from 'moti';
 import React, { useContext } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function LayoutMain() {
-    const { user } = useContext(AuthContext)
-    
+    const { user } = useContext(AuthContext);
+    const router = useRouter();
+
     // Detecta la screen activa
     const segments = useSegments();
     const current = segments[1] || "home";
+    const sub = segments[2] || null; // dashboard, transactions, etc.
+
+    // Saber si estamos en /home/transactions o subrutas
+    const showBack = current === "home" && sub === "transactions";
 
     // Textos + colores dinámicos
     const titles: Record<
@@ -22,57 +27,75 @@ export default function LayoutMain() {
             subtitle: string;
             gradient: readonly [string, string];
         }
-        > = {
-            home: {
-                title: `Hola, ${user?.name} 👋`,
-                subtitle: "Tu balance general",
-                gradient: ["#00C48C", "#00A077"] as const,
-            },
-            stats: {
-                title: "Estadísticas 📊",
-                subtitle: "Revisa tus métricas",
-                gradient: ["#6366F1", "#818CF8"] as const,
-            },
-            predictions: {
-                title: "Predicciones 🔮",
-                subtitle: "Tu futuro financiero",
-                gradient: ["#F59E0B", "#FBBF24"] as const,
-            },
-            points: {
-                title: "Puntos ⭐",
-                subtitle: "Tus recompensas",
-                gradient: ["#EF4444", "#F87171"] as const,
-            },
-            profile: {
-                title: "Perfil 👤",
-                subtitle: "Administra tu cuenta",
-                gradient: ["#3B82F6", "#60A5FA"] as const,
-            },
+    > = {
+        home: {
+            title: `Hola, ${user?.name} 👋`,
+            subtitle: "Tu balance general",
+            gradient: ["#00C48C", "#00A077"] as const,
+        },
+        transactions: {
+            title: "Transacciones 📒",
+            subtitle: "Historial completo",
+            gradient: ["#6366F1", "#4338CA"] as const,
+        },
+        stats: {
+            title: "Estadísticas 📊",
+            subtitle: "Revisa tus métricas",
+            gradient: ["#6366F1", "#818CF8"] as const,
+        },
+        predictions: {
+            title: "Predicciones 🔮",
+            subtitle: "Tu futuro financiero",
+            gradient: ["#F59E0B", "#FBBF24"] as const,
+        },
+        points: {
+            title: "Puntos ⭐",
+            subtitle: "Tus recompensas",
+            gradient: ["#EF4444", "#F87171"] as const,
+        },
+        profile: {
+            title: "Perfil 👤",
+            subtitle: "Administra tu cuenta",
+            gradient: ["#3B82F6", "#60A5FA"] as const,
+        },
+        login: { title: "", subtitle: "", gradient: ["#000", "#000"] as const },
+        register: { title: "", subtitle: "", gradient: ["#000", "#000"] as const },
+    };
 
-            login: { title: "", subtitle: "", gradient: ["#000", "#000"] as const },
-            register: { title: "", subtitle: "", gradient: ["#000", "#000"] as const },
-        };
-
-    const { title, subtitle, gradient } = titles[current] || titles.home;
+    const routeKey = sub ? sub : current;
+    const { title, subtitle, gradient } = titles[routeKey] || titles.home;
 
     return (
         <DataProvider>
-            {/* Header dinámico con gradiente */}
+
+            {/* Header dinámico */}
             <LinearGradient
                 colors={gradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.header}
             >
-                <MotiView
-                    key={current}
-                    from={{ opacity: 0, translateY: -20 }}
-                    animate={{ opacity: 1, translateY: 0 }}
-                    transition={{ duration: 400 }}
-                >
-                    <Text style={styles.headerTitle}>{title}</Text>
-                    <Text style={styles.headerSubtitle}>{subtitle}</Text>
-                </MotiView>
+
+                {/* Contenedor del back button + texto */}
+                <View style={styles.headerRow}>
+                    {showBack && (
+                        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                            <AntDesign name="arrow-left" size={24} color="#FFF" />
+                        </Pressable>
+                    )}
+
+                    <MotiView
+                        key={routeKey}
+                        from={{ opacity: 0, translateY: -20 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ duration: 400 }}
+                        style={{ flex: 1 }}
+                    >
+                        <Text style={styles.headerTitle}>{title}</Text>
+                        <Text style={styles.headerSubtitle}>{subtitle}</Text>
+                    </MotiView>
+                </View>
+
             </LinearGradient>
 
             {/* Tabs */}
@@ -177,11 +200,24 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
     },
+
+    headerRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+
+    backBtn: {
+        marginRight: 10,
+        padding: 4,
+    },
+
     headerTitle: {
         fontSize: 24,
         fontWeight: "bold",
         color: "#FFFFFF",
     },
+
     headerSubtitle: {
         marginTop: 4,
         fontSize: 16,

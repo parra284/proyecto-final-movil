@@ -24,5 +24,5 @@ export interface Transaction {
     description: string,
     category?: string,
     value: number,
-    created_at?: Date,
+    created_at: Date,
 }

@@ -2,11 +2,24 @@ import { Transaction } from "@/types/data.types";
 import { supabase } from "@/utils/supabase";
 
 export const fetchTransactions = async (
-  userId: string
+  userId: string,
+  options?: {
+    daily?: boolean;       // true → solo las de hoy
+    page?: number;         // para traer totales por partes
+    pageSize?: number;     // tamaño de cada parte (default 20)
+    
+    fromDate?: Date;       // fecha inicial del filtro
+    toDate?: Date;         // fecha final del filtro
+    category?: string;     // categoría a filtrar
+  }
 ): Promise<Transaction[]> => {
-  const { data, error } = await supabase
+  const page = options?.page ?? 0;
+  const pageSize = options?.pageSize ?? 20;
+
+  let query = supabase
     .from("transactions")
-    .select(`
+    .select(
+      `
       id,
       user_id,
       description,
@@ -21,9 +34,61 @@ export const fetchTransactions = async (
         id,
         name
       )
-    `)
+      `
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
+  // -----------------------
+  // 1️⃣ FILTRO DIARIO
+  // -----------------------
+  if (options?.daily) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    query = query
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString());
+  }
+
+  // -----------------------
+  // 2️⃣ FILTRO POR RANGO DE FECHAS
+  // -----------------------
+  if (options?.fromDate) {
+    const fromISO = new Date(options.fromDate);
+    fromISO.setHours(0, 0, 0, 0);
+
+    query = query.gte("created_at", fromISO.toISOString());
+  }
+
+  if (options?.toDate) {
+    const toISO = new Date(options.toDate);
+    toISO.setHours(23, 59, 59, 999);
+
+    query = query.lte("created_at", toISO.toISOString());
+  }
+
+  // -----------------------
+  // 3️⃣ FILTRO POR CATEGORÍA
+  // -----------------------
+  if (options?.category) {
+    query = query.eq("category", options.category);
+  }
+
+  // -----------------------
+  // 4️⃣ PAGINACIÓN SOLO SI NO ES DIARIO
+  // -----------------------
+  if (!options?.daily) {
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    query = query.range(from, to);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Error fetching transactions:", error);
@@ -37,15 +102,13 @@ export const fetchTransactions = async (
       description: tran.description,
       category: tran.category,
       value: tran.value,
-      created_at: tran.created_at,
+      created_at: new Date(tran.created_at),
 
-      // TransactionType (obligatorio)
       type: {
         id: tran.type.id,
         name: tran.type.name,
       },
 
-      // ExpenseType (opcional)
       expensetype: tran.expensetype
         ? {
             id: tran.expensetype.id,
@@ -55,6 +118,7 @@ export const fetchTransactions = async (
     })) ?? []
   );
 };
+
 
 export const fetchUserStats = async (userId: string) => {
   const { data, error } = await supabase.rpc("calculate_user_stats", {

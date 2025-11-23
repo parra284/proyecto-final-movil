@@ -3,7 +3,18 @@ import { Transaction, UserStats } from "@/types/data.types";
 import { createContext } from "react";
 
 interface DataContextProps {
-    getTransactions: (userId: string) => Promise<Transaction[]>;
+    getTransactions: (
+        userId: string,
+        options?: {
+            daily?: boolean;     // solo hoy
+            page?: number;       // página de paginación
+            pageSize?: number;   // tamaño por página
+
+            fromDate?: Date;     // filtro fecha inicio
+            toDate?: Date;       // filtro fecha fin
+            category?: string;   // filtro categoría
+        }
+    ) => Promise<Transaction[]>;
     getUserStats: (userId: string) => Promise<UserStats>;
     createTransaction: (userId: string, type: string, description: string, value: number, category?: string, expenseType?: string) => Promise<void>;
 }
@@ -12,15 +23,28 @@ export const DataContext = createContext({} as DataContextProps);
 
 export const DataProvider = ({ children }: any) => {
     
-    const getTransactions = async(userId: string) => {
+    const getTransactions = async (
+        userId: string,
+        options?: {
+            daily?: boolean;     // solo hoy
+            page?: number;       // página de paginación
+            pageSize?: number;   // tamaño por página
+
+            fromDate?: Date;     // filtro fecha inicio
+            toDate?: Date;       // filtro fecha fin
+            category?: string;   // filtro categoría
+        }
+        ) => {
         try {
-            const data = await fetchTransactions(userId);
-            return data; 
+            const data = await fetchTransactions(userId, options);
+            return data;
         } catch (err) {
             console.error("Error in getTransactions context:", err);
             return [];
         }
-    }   
+    };
+
+ 
 
     const getUserStats = async (userId: string) => {
         try {
