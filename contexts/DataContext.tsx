@@ -1,27 +1,38 @@
-import { fetchExpenses } from "@/services/dataService";
-import { Expense } from "@/types/data.types";
+import { fetchTransactions, fetchUserStats } from "@/services/dataService";
+import { Transaction, UserStats } from "@/types/data.types";
 import { createContext } from "react";
 
 interface DataContextProps {
-    getExpenses: (userId: string) => Promise<Expense[]>;
+    getTransactions: (userId: string) => Promise<Transaction[]>;
+    getUserStats: (userId: string) => Promise<UserStats>;
 }
 
 export const DataContext = createContext({} as DataContextProps);
 
 export const DataProvider = ({ children }: any) => {
     
-    const getExpenses = async(userId: string) => {
+    const getTransactions = async(userId: string) => {
         try {
-            const data = await fetchExpenses(userId);
+            const data = await fetchTransactions(userId);
             return data; 
         } catch (err) {
-            console.error("Error in getExpenses context:", err);
+            console.error("Error in getTransactions context:", err);
             return [];
         }
     }   
 
+    const getUserStats = async (userId: string) => {
+        try {
+            const stats = await fetchUserStats(userId);
+            return stats;
+        } catch (err) {
+            console.error("Error in getUserStats context:", err);
+            return { income: 0, expense: 0, balance: 0 }; 
+        }
+    };
+
     return (
-        <DataContext.Provider value={{ getExpenses }}>
+        <DataContext.Provider value={{ getTransactions, getUserStats, }}>
             {children}
         </DataContext.Provider>
     )

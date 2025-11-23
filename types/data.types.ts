@@ -1,12 +1,26 @@
-export interface ExpenseType {
-    id: string,
-    type: string
+// Gastos
+
+export interface UserStats {
+  income: number;
+  expense: number;
+  balance: number;
 }
 
-export interface Expense {
+export interface TransactionType {
+    id: string,
+    name: string
+}
+
+export interface ExpenseType {
+    id: string,
+    name: string
+}
+
+export interface Transaction {
     id: string,
     user_id: string,
-    expensetype: ExpenseType,
+    type: TransactionType,
+    expensetype?: ExpenseType,
     description: string,
     category?: string,
     value: number,

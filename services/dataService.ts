@@ -1,9 +1,11 @@
-import { Expense } from "@/types/data.types";
+import { Transaction } from "@/types/data.types";
 import { supabase } from "@/utils/supabase";
 
-export const fetchExpenses = async (userId: string): Promise<Expense[]> => {
+export const fetchTransactions = async (
+  userId: string
+): Promise<Transaction[]> => {
   const { data, error } = await supabase
-    .from("expenses")
+    .from("transactions")
     .select(`
       id,
       user_id,
@@ -11,32 +13,61 @@ export const fetchExpenses = async (userId: string): Promise<Expense[]> => {
       category,
       value,
       created_at,
-      expensetype:expensetype!inner (
+      type:transactiontypes (
         id,
-        type
+        name
+      ),
+      expensetype:expensetypes (
+        id,
+        name
       )
     `)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching expenses:", error);
+    console.error("Error fetching transactions:", error);
     throw error;
   }
 
-  // 🔥 Mapeo correcto al tipo Expense
   return (
-    data?.map((exp: any): Expense => ({
-      id: exp.id,
-      user_id: exp.user_id,
-      description: exp.description,
-      category: exp.category,
-      value: exp.value,
-      created_at: exp.created_at,
-      expensetype: {
-        id: exp.expensetype.id,
-        type: exp.expensetype.type
-      }
+    data?.map((tran: any): Transaction => ({
+      id: tran.id,
+      user_id: tran.user_id,
+      description: tran.description,
+      category: tran.category,
+      value: tran.value,
+      created_at: tran.created_at,
+
+      // TransactionType (obligatorio)
+      type: {
+        id: tran.type.id,
+        name: tran.type.name,
+      },
+
+      // ExpenseType (opcional)
+      expensetype: tran.expensetype
+        ? {
+            id: tran.expensetype.id,
+            name: tran.expensetype.name,
+          }
+        : undefined,
     })) ?? []
   );
+};
+
+export const fetchUserStats = async (userId: string) => {
+  const { data, error } = await supabase.rpc("calculate_user_stats", {
+    uid: userId,
+  });
+
+  if (error) throw error;
+
+  const stats = data[0]; 
+
+  return {
+    income: Number(stats.income),
+    expense: Number(stats.expense),
+    balance: Number(stats.balance),
+  };
 };

@@ -13,19 +13,26 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { AuthContext } from '@/contexts/AuthContext';
 import { DataContext } from '@/contexts/DataContext';
-import { Expense } from '@/types/data.types';
+import { Transaction, UserStats } from '@/types/data.types';
 
 export default function DashboardScreen() {
   const { user } = useContext(AuthContext);
-  const { getExpenses } = useContext(DataContext);
+  const { getTransactions, getUserStats } = useContext(DataContext);
 
-  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [stats, setStats] = useState<UserStats>({
+    income: 0,
+    expense: 0,
+    balance: 0
+  });
+  const [transactions, setTransactions] = useState<Transaction[]>([])
 
   useEffect(() => {
     const loadData = async () => {
       if (!user?.id) return;
-      const data = await getExpenses(user.id);
-      setExpenses(data);
+      const statsData = await getUserStats(user.id);
+      setStats(statsData)
+      const transData = await getTransactions(user.id);
+      setTransactions(transData);
     };
 
     loadData();
@@ -33,36 +40,6 @@ export default function DashboardScreen() {
 
 
   const onNavigate = () => {}
-
-  const transactions = [
-    {
-      id: 1,
-      name: 'Supermercado Éxito',
-      category: 'Alimentos',
-      amount: -45.5,
-      icon: ShoppingBag,
-      color: '#00C48C',
-      type: 'Manual',
-    },
-    {
-      id: 2,
-      name: 'Café Juan Valdez',
-      category: 'Entretenimiento',
-      amount: -8.0,
-      icon: Coffee,
-      color: '#FBBF24',
-      type: 'Factura',
-    },
-    {
-      id: 3,
-      name: 'Codensa - Electricidad',
-      category: 'Servicios',
-      amount: -120.0,
-      icon: Zap,
-      color: '#1F2937',
-      type: 'Factura',
-    },
-  ];
 
   return (
     <View style={styles.container}>
@@ -73,7 +50,7 @@ export default function DashboardScreen() {
           <Card delay={0.1}>
             <View style={styles.balanceCard}>
               <Text style={styles.balanceLabel}>Tu gasto de hoy</Text>
-              <Text style={styles.balanceValue}>$75,000 COP</Text>
+              <Text style={styles.balanceValue}>${stats.balance.toLocaleString("es-CO")} COP</Text>
             </View>
           </Card>
         </View>
@@ -89,7 +66,7 @@ export default function DashboardScreen() {
                 <View style={[styles.iconCircle, { backgroundColor: '#BBF7D0' }]}>
                   <TrendingUp size={24} color="#00C48C" />
                 </View>
-                <Text style={styles.summaryValuePositive}>+$350</Text>
+                <Text style={styles.summaryValuePositive}>+${stats.income.toLocaleString("es-CO")}</Text>
                 <Text style={styles.summaryLabel}>Ingresos</Text>
               </View>
 
@@ -98,7 +75,7 @@ export default function DashboardScreen() {
                 <View style={[styles.iconCircle, { backgroundColor: '#FEE2E2' }]}>
                   <ShoppingBag size={24} color="#EF4444" />
                 </View>
-                <Text style={styles.summaryValueNeutral}>-$173</Text>
+                <Text style={styles.summaryValueNeutral}>-${stats.expense.toLocaleString("es-CO")}</Text>
                 <Text style={styles.summaryLabel}>Gastos</Text>
               </View>
 
@@ -123,22 +100,29 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.transactionsList}>
-          {expenses.map((expense, index) => {
-            const isFactura = expense.expensetype.type === "Factura" || expense.expensetype.type === "Factura-E";
+          {transactions.map((transaction, index) => {
+            const isIncome = transaction.type.name === "Income";
+            
+            // Color del ícono según tipo
+            const color = isIncome ? "#00C48C" : "#EF4444"; // verde ingreso / rojo gasto
 
-            // Opcional: asignar ícono por categoría
-            const CategoryIcon = {
-              Alimentos: ShoppingBag,
-              Servicios: Zap,
-              Entretenimiento: Coffee,
-            }[expense.category ?? "Alimentos"] || ShoppingBag;
+            // Texto del tag
+            const tagText = isIncome
+              ? "Ingreso"
+              : transaction.expensetype?.name ?? "Gasto";
 
-            const color = isFactura ? "#00C48C" : "#6B7280";
+            // Ícono según categoría (igual a tu código)
+            const CategoryIcon =
+              {
+                Alimentos: ShoppingBag,
+                Servicios: Zap,
+                Entretenimiento: Coffee,
+              }[transaction.category ?? "Alimentos"] || ShoppingBag;
 
             return (
-              <Card key={expense.id} delay={0.4 + index * 0.1} hover>
+              <Card key={transaction.id} delay={0.4 + index * 0.1} hover>
                 <View style={styles.transactionItem}>
-                  
+
                   {/* ICON */}
                   <View
                     style={[
@@ -152,27 +136,28 @@ export default function DashboardScreen() {
                   {/* INFO */}
                   <View style={styles.transactionInfo}>
                     <Text style={styles.transactionName} numberOfLines={1}>
-                      {expense.description}
+                      {transaction.description}
                     </Text>
 
                     <View style={styles.transactionMeta}>
                       <Text style={styles.transactionCategory}>
-                        {expense.category ?? "Sin categoría"}
+                        {transaction.category ?? "Sin categoría"}
                       </Text>
 
+                      {/* TAG */}
                       <View
                         style={[
                           styles.transactionTag,
-                          isFactura ? styles.tagFactura : styles.tagManual,
+                          isIncome ? styles.tagIncome : styles.tagExpense,
                         ]}
                       >
                         <Text
                           style={[
                             styles.tagText,
-                            isFactura ? styles.tagTextFactura : styles.tagTextManual,
+                            isIncome ? styles.tagTextIncome : styles.tagTextExpense,
                           ]}
                         >
-                          {expense.expensetype.type}
+                          {tagText}
                         </Text>
                       </View>
                     </View>
@@ -180,13 +165,14 @@ export default function DashboardScreen() {
 
                   {/* AMOUNT */}
                   <Text style={styles.transactionAmount}>
-                    ${expense.value.toFixed(2)}
+                    ${transaction.value.toLocaleString("es-CO")} COP
                   </Text>
                 </View>
               </Card>
             );
           })}
         </View>
+
 
         {/* Action Buttons */}
         <View style={styles.actionsWrapper}>
@@ -354,20 +340,22 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 9999,
   },
-  tagFactura: {
-    backgroundColor: '#00C48C20',
-  },
-  tagManual: {
-    backgroundColor: '#F3F4F6',
-  },
   tagText: {
     fontSize: 12,
   },
-  tagTextFactura: {
+    // TAG estilos corregidos
+  tagIncome: {
+    backgroundColor: '#00C48C20', // verde claro
+  },
+  tagExpense: {
+    backgroundColor: '#FEE2E2', // rojo claro
+  },
+
+  tagTextIncome: {
     color: '#00C48C',
   },
-  tagTextManual: {
-    color: '#6B7280',
+  tagTextExpense: {
+    color: '#EF4444',
   },
   transactionAmount: {
     color: '#111827',
@@ -379,7 +367,7 @@ const styles = StyleSheet.create({
     marginTop: 32
   },
 
-  registerExpenseButton: {
+  registertransactionButton: {
     borderWidth: 2,
     borderColor: '#00C48C',
   },
