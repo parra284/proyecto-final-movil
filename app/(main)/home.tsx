@@ -11,20 +11,24 @@ import { ArrowDownToLine, Coffee, Plus, ShoppingBag, TrendingUp, Zap } from 'luc
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import TransactionForm from '@/components/TransactionForm';
 import { AuthContext } from '@/contexts/AuthContext';
 import { DataContext } from '@/contexts/DataContext';
 import { Transaction, UserStats } from '@/types/data.types';
 
 export default function DashboardScreen() {
   const { user } = useContext(AuthContext);
-  const { getTransactions, getUserStats } = useContext(DataContext);
+  const { getTransactions, getUserStats, createTransaction } = useContext(DataContext);
 
   const [stats, setStats] = useState<UserStats>({
     income: 0,
     expense: 0,
     balance: 0
   });
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  
+  const [showForm, setShowForm] = useState(false);
+  const [presetType, setPresetType] = useState<"income" | "expense">("income");
 
   useEffect(() => {
     const loadData = async () => {
@@ -101,7 +105,7 @@ export default function DashboardScreen() {
 
         <View style={styles.transactionsList}>
           {transactions.map((transaction, index) => {
-            const isIncome = transaction.type.name === "Income";
+            const isIncome = transaction.type.name === "income";
             
             // Color del ícono según tipo
             const color = isIncome ? "#00C48C" : "#EF4444"; // verde ingreso / rojo gasto
@@ -181,6 +185,10 @@ export default function DashboardScreen() {
             size="lg"
             fullWidth
             icon={<Plus size={20} color="#FFF" />}
+            onClick={() => {
+              setPresetType("income");
+              setShowForm(true);
+            }}
           >
             Agregar Ingreso
           </Button>
@@ -190,6 +198,10 @@ export default function DashboardScreen() {
             size="lg"
             fullWidth
             icon={<ArrowDownToLine size={20} color="#00C48C" />}
+            onClick={() => {
+              setPresetType("expense");
+              setShowForm(true);
+            }}
           >
             Registrar Gasto
           </Button>
@@ -197,6 +209,29 @@ export default function DashboardScreen() {
 
         <View style={{ height: 120 }} />
       </ScrollView>
+      <TransactionForm
+        visible={showForm}
+        onClose={() => setShowForm(false)}
+        presetType={presetType}
+        onSubmit={async (data) => {
+          if (!user?.id) return;
+
+          await createTransaction(
+            user.id,
+            data.type,
+            data.description,
+            data.value,
+            data.category,
+            data.expenseType
+          );
+
+          // Refrescar datos
+          const updatedStats = await getUserStats(user.id);
+          setStats(updatedStats);
+          const updatedTrans = await getTransactions(user.id);
+          setTransactions(updatedTrans);
+        }}
+      />
     </View>
   );
 }

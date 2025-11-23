@@ -71,3 +71,60 @@ export const fetchUserStats = async (userId: string) => {
     balance: Number(stats.balance),
   };
 };
+
+export const uploadTransaction = async (
+  userId: string,
+  type: string,          // "income", "expense", etc   (string)
+  description: string,
+  value: number,
+  category?: string,
+  expenseType?: string,  // "food", "transport", etc   (string opcional)
+) => {
+
+  // 1. Buscar ID del transactiontype
+  const { data: tData, error: tError } = await supabase
+    .from("transactiontypes")
+    .select("id")
+    .eq("name", type)
+    .single();
+
+  if (tError || !tData) {
+    console.error("Transaction type not found:", tError);
+    throw new Error("Invalid transaction type: " + type);
+  }
+
+  // 2. Si es gasto, buscar ID del expensetype
+  let expenseTypeId = null;
+
+  if (expenseType) {
+    const { data: eData, error: eError } = await supabase
+      .from("expensetypes")
+      .select("id")
+      .eq("name", expenseType)
+      .single();
+
+    if (eError || !eData) {
+      console.error("Expense type not found:", eError);
+      throw new Error("Invalid expense type: " + expenseType);
+    }
+
+    expenseTypeId = eData.id;
+  }
+
+  // 3. Insertar la transacción
+  const { error } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: userId,
+      type_id: tData.id,
+      expensetype_id: expenseTypeId,
+      description,
+      category: category || null,
+      value,
+    });
+
+  if (error) {
+    console.error("Error creating transaction:", error);
+    throw error;
+  }
+};
