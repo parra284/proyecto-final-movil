@@ -37,7 +37,7 @@ export default function Login() {
 
     run(async () => {
       await login(form.email.trim(), form.password.trim());
-      router.replace("/(main)/home");
+      router.replace("/(main)/home/dashboard");
     }).catch((err) => {
       Alert.alert("Error", err.message || "No se pudo iniciar sesión");
     });
