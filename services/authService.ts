@@ -48,10 +48,7 @@ export const createProfile = async (user: User, userId: string) => {
 };
 
 // Actualiza los datos generales del usuario (nombre, email, etc.)
-export const updateUserProfileData = async (
-  user: User,
-  profileData: Partial<User>
-) => {
+export const updateUserProfileData = async (user: User, profileData: Partial<User>) => {
   const { error } = await supabase
     .from("profiles")
     .update({

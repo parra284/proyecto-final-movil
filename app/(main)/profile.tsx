@@ -19,6 +19,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -28,10 +29,13 @@ import ModalCamera from "@/components/ModalCamera";
 import { AuthContext } from "@/contexts/AuthContext";
 
 const Profile = () => {
-  const { user, updateImage } = useContext(AuthContext);
+  const { user, updateImage, updateData } = useContext(AuthContext);
   const [avatar, setAvatar] = useState(user?.avatar_url);
 
   const [cameraVisible, setCameraVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [name, setName] = useState(user?.name || "");
+  const [lastName, setLastName] = useState(user?.last_name || "");
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -49,16 +53,15 @@ const Profile = () => {
 
     sendImage();
   }, [avatar]);
-
-
+  
   const settings = [
     {
       id: 1,
       icon: User,
       title: "Editar perfil",
-      subtitle: "Nombre, foto y datos personales",
+      subtitle: "Datos personales",
       color: "#00C48C",
-      action: () => {},
+      action: () => setEditModalVisible(true),
     },
     {
       id: 2,
@@ -146,7 +149,7 @@ const Profile = () => {
                 </View>
 
                 {/* Nombre + correo */}
-                <Text style={styles.profileName}>{user?.name} {user?.lastName}</Text>
+                <Text style={styles.profileName}>{user?.name} {user?.last_name}</Text>
                 <Text style={styles.profileEmail}>{user?.email}</Text>
 
                 {/* Stats */}
@@ -312,6 +315,54 @@ const Profile = () => {
           onClose={() => setCameraVisible(false)}
           onCapture={handleCapture}/>
         )}
+
+        {editModalVisible && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Editar perfil</Text>
+
+              <Text style={styles.inputLabel}>Nombre</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Nombre"
+              />
+
+              <Text style={styles.inputLabel}>Apellido</Text>
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Apellido"
+              />
+
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: "#D1D5DB" }]}
+                  onPress={() => setEditModalVisible(false)}
+                >
+                  <Text>Cancelar</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: "#00C48C" }]}
+                  onPress={async () => {
+                    try {
+                      await updateData({ name, last_name: lastName });
+                      setEditModalVisible(false);
+                    } catch (error) {
+                      console.error("Error actualizando perfil:", error);
+                    }
+                  }}
+                >
+                  <Text style={{ color: "#fff" }}>Guardar</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        )}
+
       </View>
     </SafeAreaView>
   );
@@ -544,5 +595,53 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12,
     color: "#9CA3AF",
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalContent: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    marginTop: 12,
+    marginBottom: 4,
+    color: "#111827",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 20,
+    gap: 10,
+  },
+  modalButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

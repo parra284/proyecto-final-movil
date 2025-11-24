@@ -45,6 +45,11 @@ export const AuthProvider = ({ children }: any) => {
   const updateData = async(profileData: Partial<User>) => {
       if (!user) return
       await updateUserProfileData(user, profileData);
+
+      setUser((prevUser) => ({
+        ...prevUser!,
+        ...profileData,
+      }));
   }
 
 
