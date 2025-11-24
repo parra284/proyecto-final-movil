@@ -1,15 +1,13 @@
 // app/(main)/predictions.tsx
 import { Card } from "@/components/Card";
-import { AuthContext } from "@/contexts/AuthContext";
-import { DataContext } from "@/contexts/DataContext";
-import { getTransactionPredictions, TransactionPrediction } from "@/utils/gemini";
+import { ExtraContext } from "@/contexts/ExtraContext";
+import { TransactionPrediction } from "@/types/ai.types";
 import { AlertCircle } from "lucide-react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const Predictions = () => {
-  const { user } = useContext(AuthContext);
-  const { getTransactions } = useContext(DataContext);
+  const { getPredictions } = useContext(ExtraContext);
 
   const [predictions, setPredictions] = useState<TransactionPrediction[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -17,15 +15,8 @@ const Predictions = () => {
   useEffect(() => {
     const loadPredictions = async () => {
       try {
-        // 1️⃣ Traemos las transacciones del mes
-        if(!user) return;
-        const transactions = await getTransactions(user?.id, {
-          fromDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-          toDate: new Date(),
-        });
-
         // 2️⃣ Pedimos predicciones a Gemini
-        const aiPredictions = await getTransactionPredictions(transactions);
+        const aiPredictions = await getPredictions();
 
         setPredictions(aiPredictions);
       } catch (error) {

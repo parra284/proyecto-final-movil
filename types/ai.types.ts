@@ -33,8 +33,7 @@ export interface PromptTokensDetail {
     tokenCount: number;
 }
 
-export interface Question {
-    question: string;
-    options: string[];
-    correctOption: number;
+export interface TransactionPrediction {
+  transactionId: string;
+  prediction: string;
 }

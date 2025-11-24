@@ -1,11 +1,6 @@
 // aiTransactionService.ts
-import { GeminiResponse } from "@/types/ai.types";
+import { GeminiResponse, TransactionPrediction } from "@/types/ai.types";
 import { Transaction } from "@/types/data.types";
-
-export interface TransactionPrediction {
-  transactionId: string;
-  prediction: string;
-}
 
 export const getTransactionPredictions = async (
   transactions: Transaction[]

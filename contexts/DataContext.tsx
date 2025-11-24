@@ -1,10 +1,10 @@
 import { fetchTransactions, fetchUserStats, uploadTransaction } from "@/services/dataService";
 import { Transaction, UserStats } from "@/types/data.types";
-import { createContext } from "react";
+import { createContext, useContext } from "react";
+import { AuthContext } from "./AuthContext";
 
 interface DataContextProps {
     getTransactions: (
-        userId: string,
         options?: {
             daily?: boolean;     // solo hoy
             page?: number;       // página de paginación
@@ -15,16 +15,16 @@ interface DataContextProps {
             category?: string;   // filtro categoría
         }
     ) => Promise<Transaction[]>;
-    getUserStats: (userId: string) => Promise<UserStats>;
-    createTransaction: (userId: string, type: string, description: string, value: number, category?: string, expenseType?: string) => Promise<void>;
+    getUserStats: () => Promise<UserStats>;
+    createTransaction: (type: string, description: string, value: number, category?: string, expenseType?: string) => Promise<void>;
 }
 
 export const DataContext = createContext({} as DataContextProps);
 
 export const DataProvider = ({ children }: any) => {
+    const { user } = useContext(AuthContext);
     
     const getTransactions = async (
-        userId: string,
         options?: {
             daily?: boolean;     // solo hoy
             page?: number;       // página de paginación
@@ -34,9 +34,10 @@ export const DataProvider = ({ children }: any) => {
             toDate?: Date;       // filtro fecha fin
             category?: string;   // filtro categoría
         }
-        ) => {
+        ): Promise<Transaction[]> => {
         try {
-            const data = await fetchTransactions(userId, options);
+            if(!user) return[];
+            const data = await fetchTransactions(user?.id, options);
             return data;
         } catch (err) {
             console.error("Error in getTransactions context:", err);
@@ -44,11 +45,10 @@ export const DataProvider = ({ children }: any) => {
         }
     };
 
- 
-
-    const getUserStats = async (userId: string) => {
+    const getUserStats = async (): Promise<UserStats> => {
         try {
-            const stats = await fetchUserStats(userId);
+            if(!user) return { income: 0, expense: 0, balance: 0 }; ;
+            const stats = await fetchUserStats(user?.id);
             return stats;
         } catch (err) {
             console.error("Error in getUserStats context:", err);
@@ -57,7 +57,6 @@ export const DataProvider = ({ children }: any) => {
     };
 
     const createTransaction = async (
-        userId: string,
         type: string,          
         description: string,
         value: number,
@@ -65,8 +64,9 @@ export const DataProvider = ({ children }: any) => {
         expenseType?: string,   
     ) => {
         try {
+            if(!user) return;
             await uploadTransaction(
-                userId,
+                user?.id,
                 type,
                 description,
                 value,

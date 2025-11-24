@@ -1,17 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 import { ShoppingBag } from "lucide-react-native";
 
 import { Card } from "@/components/Card";
-import { AuthContext } from "@/contexts/AuthContext";
 import { DataContext } from "@/contexts/DataContext";
 import { CATEGORIES } from "@/types/categories";
 import { Transaction } from "@/types/data.types";
@@ -19,7 +18,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 
 export default function TransactionsScreen() {
-  const { user } = useContext(AuthContext);
   const { getTransactions } = useContext(DataContext);
 
   const PAGE_SIZE = 20;
@@ -42,8 +40,6 @@ export default function TransactionsScreen() {
   /* -------------------------------------------- */
 
     useEffect(() => {
-    if (!user?.id) return;
-
     // Resetear lista y estado de paginación
     setTransactions([]);
     setPage(0);
@@ -51,14 +47,12 @@ export default function TransactionsScreen() {
 
     // Cargar primera página con filtros actualizados
     fetchTransactions(0, true);
-    }, [user?.id, fromDate, toDate, category]);
+    }, [fromDate, toDate, category]);
 
     const fetchTransactions = async (pageToLoad: number, replace = false) => {
-    if (!user?.id) return;
-
     setLoading(true);
     try {
-        const data = await getTransactions(user.id, {
+        const data = await getTransactions({
         page: pageToLoad,
         pageSize: PAGE_SIZE,
         fromDate,

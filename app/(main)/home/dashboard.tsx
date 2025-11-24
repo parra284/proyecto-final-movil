@@ -12,14 +12,12 @@ import { ArrowDownToLine, Plus, ShoppingBag, TrendingUp } from 'lucide-react-nat
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import TransactionForm from '@/components/TransactionForm';
-import { AuthContext } from '@/contexts/AuthContext';
 import { DataContext } from '@/contexts/DataContext';
 import { CATEGORIES } from '@/types/categories';
 import { Transaction, UserStats } from '@/types/data.types';
 import { router } from 'expo-router';
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
   const { getTransactions, getUserStats, createTransaction } = useContext(DataContext);
 
   const [stats, setStats] = useState<UserStats>({
@@ -34,15 +32,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!user?.id) return;
-      const statsData = await getUserStats(user.id);
+      const statsData = await getUserStats();
       setStats(statsData)
-      const transData = await getTransactions(user.id, { daily: true });
+      const transData = await getTransactions({ daily: true });
       setTransactions(transData);
     };
 
     loadData();
-  }, [user?.id]);
+  }, []);
 
 
   const onNavigate = () => {
@@ -215,10 +212,7 @@ export default function Dashboard() {
         onClose={() => setShowForm(false)}
         presetType={presetType}
         onSubmit={async (data) => {
-          if (!user?.id) return;
-
           await createTransaction(
-            user.id,
             data.type,
             data.description,
             data.value,
@@ -227,9 +221,9 @@ export default function Dashboard() {
           );
 
           // Refrescar datos
-          const updatedStats = await getUserStats(user.id);
+          const updatedStats = await getUserStats();
           setStats(updatedStats);
-          const updatedTrans = await getTransactions(user.id);
+          const updatedTrans = await getTransactions({ daily: true });
           setTransactions(updatedTrans);
         }}
       />

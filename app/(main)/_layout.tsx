@@ -1,5 +1,6 @@
 import { AuthContext } from '@/contexts/AuthContext';
 import { DataProvider } from '@/contexts/DataContext';
+import { ExtraProvider } from '@/contexts/ExtraContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { LinearGradient } from "expo-linear-gradient";
 import { Tabs, useRouter, useSegments } from "expo-router";
@@ -67,127 +68,128 @@ export default function LayoutMain() {
 
     return (
         <DataProvider>
+            <ExtraProvider>
+                {/* Header dinámico */}
+                <LinearGradient
+                    colors={gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.header}
+                >
 
-            {/* Header dinámico */}
-            <LinearGradient
-                colors={gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.header}
-            >
+                    {/* Contenedor del back button + texto */}
+                    <View style={styles.headerRow}>
+                        {showBack && (
+                            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                                <AntDesign name="arrow-left" size={24} color="#FFF" />
+                            </Pressable>
+                        )}
 
-                {/* Contenedor del back button + texto */}
-                <View style={styles.headerRow}>
-                    {showBack && (
-                        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-                            <AntDesign name="arrow-left" size={24} color="#FFF" />
-                        </Pressable>
-                    )}
+                        <MotiView
+                            key={routeKey}
+                            from={{ opacity: 0, translateY: -20 }}
+                            animate={{ opacity: 1, translateY: 0 }}
+                            transition={{ duration: 400 }}
+                            style={{ flex: 1 }}
+                        >
+                            <Text style={styles.headerTitle}>{title}</Text>
+                            <Text style={styles.headerSubtitle}>{subtitle}</Text>
+                        </MotiView>
+                    </View>
 
-                    <MotiView
-                        key={routeKey}
-                        from={{ opacity: 0, translateY: -20 }}
-                        animate={{ opacity: 1, translateY: 0 }}
-                        transition={{ duration: 400 }}
-                        style={{ flex: 1 }}
-                    >
-                        <Text style={styles.headerTitle}>{title}</Text>
-                        <Text style={styles.headerSubtitle}>{subtitle}</Text>
-                    </MotiView>
-                </View>
+                </LinearGradient>
 
-            </LinearGradient>
-
-            {/* Tabs */}
-            <Tabs
-                screenOptions={{
-                    headerShown: false,
-                    tabBarShowLabel: true,
-                    tabBarStyle: styles.tabBar,
-                    tabBarActiveTintColor: "#00C48C",
-                    tabBarInactiveTintColor: "#9CA3AF",
-                }}
-            >
-                <Tabs.Screen
-                    name="home"
-                    options={{
-                        tabBarLabel: "Inicio",
-                        tabBarIcon: ({ color, focused }) => (
-                            <MotiView
-                                from={{ scale: 1 }}
-                                animate={{ scale: focused ? 1.25 : 1 }}
-                                transition={{ duration: 200 }}
-                            >
-                                <AntDesign name="home" size={24} color={color} />
-                            </MotiView>
-                        )
+                {/* Tabs */}
+                <Tabs
+                    screenOptions={{
+                        headerShown: false,
+                        tabBarShowLabel: true,
+                        tabBarStyle: styles.tabBar,
+                        tabBarActiveTintColor: "#00C48C",
+                        tabBarInactiveTintColor: "#9CA3AF",
                     }}
-                />
+                >
+                    <Tabs.Screen
+                        name="home"
+                        options={{
+                            tabBarLabel: "Inicio",
+                            tabBarIcon: ({ color, focused }) => (
+                                <MotiView
+                                    from={{ scale: 1 }}
+                                    animate={{ scale: focused ? 1.25 : 1 }}
+                                    transition={{ duration: 200 }}
+                                >
+                                    <AntDesign name="home" size={24} color={color} />
+                                </MotiView>
+                            )
+                        }}
+                    />
 
-                <Tabs.Screen
-                    name="stats"
-                    options={{
-                        tabBarLabel: "Estadísticas",
-                        tabBarIcon: ({ color, focused }) => (
-                            <MotiView
-                                from={{ scale: 1 }}
-                                animate={{ scale: focused ? 1.25 : 1 }}
-                                transition={{ duration: 200 }}
-                            >
-                                <AntDesign name="line-chart" size={24} color={color} />
-                            </MotiView>
-                        )
-                    }}
-                />
+                    <Tabs.Screen
+                        name="stats"
+                        options={{
+                            tabBarLabel: "Estadísticas",
+                            tabBarIcon: ({ color, focused }) => (
+                                <MotiView
+                                    from={{ scale: 1 }}
+                                    animate={{ scale: focused ? 1.25 : 1 }}
+                                    transition={{ duration: 200 }}
+                                >
+                                    <AntDesign name="line-chart" size={24} color={color} />
+                                </MotiView>
+                            )
+                        }}
+                    />
 
-                <Tabs.Screen
-                    name="predictions"
-                    options={{
-                        tabBarLabel: "Predicciones",
-                        tabBarIcon: ({ color, focused }) => (
-                            <MotiView
-                                from={{ scale: 1 }}
-                                animate={{ scale: focused ? 1.25 : 1 }}
-                                transition={{ duration: 200 }}
-                            >
-                                <AntDesign name="experiment" size={24} color={color} />
-                            </MotiView>
-                        )
-                    }}
-                />
+                    <Tabs.Screen
+                        name="predictions"
+                        options={{
+                            tabBarLabel: "Predicciones",
+                            tabBarIcon: ({ color, focused }) => (
+                                <MotiView
+                                    from={{ scale: 1 }}
+                                    animate={{ scale: focused ? 1.25 : 1 }}
+                                    transition={{ duration: 200 }}
+                                >
+                                    <AntDesign name="experiment" size={24} color={color} />
+                                </MotiView>
+                            )
+                        }}
+                    />
 
-                <Tabs.Screen
-                    name="points"
-                    options={{
-                        tabBarLabel: "Puntos",
-                        tabBarIcon: ({ color, focused }) => (
-                            <MotiView
-                                from={{ scale: 1 }}
-                                animate={{ scale: focused ? 1.25 : 1 }}
-                                transition={{ duration: 200 }}
-                            >
-                                <AntDesign name="star" size={24} color={color} />
-                            </MotiView>
-                        )
-                    }}
-                />
+                    <Tabs.Screen
+                        name="points"
+                        options={{
+                            tabBarLabel: "Puntos",
+                            tabBarIcon: ({ color, focused }) => (
+                                <MotiView
+                                    from={{ scale: 1 }}
+                                    animate={{ scale: focused ? 1.25 : 1 }}
+                                    transition={{ duration: 200 }}
+                                >
+                                    <AntDesign name="star" size={24} color={color} />
+                                </MotiView>
+                            )
+                        }}
+                    />
 
-                <Tabs.Screen
-                    name="profile"
-                    options={{
-                        tabBarLabel: "Perfil",
-                        tabBarIcon: ({ color, focused }) => (
-                            <MotiView
-                                from={{ scale: 1 }}
-                                animate={{ scale: focused ? 1.25 : 1 }}
-                                transition={{ duration: 200 }}
-                            >
-                                <AntDesign name="user" size={24} color={color} />
-                            </MotiView>
-                        )
-                    }}
-                />
-            </Tabs>
+                    <Tabs.Screen
+                        name="profile"
+                        options={{
+                            tabBarLabel: "Perfil",
+                            tabBarIcon: ({ color, focused }) => (
+                                <MotiView
+                                    from={{ scale: 1 }}
+                                    animate={{ scale: focused ? 1.25 : 1 }}
+                                    transition={{ duration: 200 }}
+                                >
+                                    <AntDesign name="user" size={24} color={color} />
+                                </MotiView>
+                            )
+                        }}
+                    />
+                </Tabs>
+            </ExtraProvider>
         </DataProvider>
     );
 }
