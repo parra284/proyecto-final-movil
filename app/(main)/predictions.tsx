@@ -48,19 +48,14 @@ const Predictions = () => {
 
           <View style={styles.cardsStack}>
             {predictions.map((prediction, index) => (
-              <Card key={prediction.transactionId} delay={index * 120} hover>
+              <Card key={index} delay={index * 120} hover>
                 <View style={styles.predictionCardInner}>
-                  <View
-                    style={[styles.predictionIconBox, { backgroundColor: "#2563EB20" }]}
-                  >
+                  <View style={[styles.predictionIconBox, { backgroundColor: "#2563EB20" }]}>
                     <AlertCircle size={26} color="#2563EB" />
                   </View>
 
                   <View style={styles.predictionTextBlock}>
                     <Text style={styles.predictionTitle}>{prediction.prediction}</Text>
-                    <Text style={styles.predictionDescription}>
-                      Basado en la transacción ID: {prediction.transactionId}
-                    </Text>
                   </View>
                 </View>
               </Card>

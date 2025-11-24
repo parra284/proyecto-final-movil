@@ -34,6 +34,5 @@ export interface PromptTokensDetail {
 }
 
 export interface TransactionPrediction {
-  transactionId: string;
-  prediction: string;
+  prediction: string; // Ya no necesitamos transactionId
 }

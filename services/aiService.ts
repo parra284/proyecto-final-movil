@@ -1,4 +1,3 @@
-// aiTransactionService.ts
 import { GeminiResponse, TransactionPrediction } from "@/types/ai.types";
 import { Transaction } from "@/types/data.types";
 
@@ -7,25 +6,22 @@ export const getTransactionPredictions = async (
 ): Promise<TransactionPrediction[]> => {
   if (!transactions.length) return [];
 
-  // 1️⃣ Construimos el prompt a partir de las transacciones
+  // Convertimos las transacciones en texto para dar contexto a la IA
   const transactionText = transactions
     .map(
       (t) =>
-        `ID: ${t.id}, Description: ${t.description}, Category: ${t.category ?? "N/A"}, Value: ${t.value}, Date: ${t.created_at.toISOString()}`
+        `Description: ${t.description}, Category: ${t.category ?? "N/A"}, Value: ${t.value}, Date: ${t.created_at.toISOString()}`
     )
     .join("\n");
 
-  const prompt = `Analyze the following transactions and provide a prediction or insight for each. 
-Return the result as a JSON array with objects containing "transactionId" and "prediction":\n\n${transactionText}`;
+  // Prompt actualizado para generar insights generales
+  const prompt = `Analyze the following transactions and provide 3 to 5 interesting insights or recommendations about the user's spending habits, saving opportunities, or patterns. 
+Return the result as a JSON array of objects with a "prediction" field only. Do not tie predictions to individual transactions.\n\n${transactionText}`;
 
   const body = {
     contents: [
       {
-        parts: [
-          {
-            text: prompt,
-          },
-        ],
+        parts: [{ text: prompt }],
       },
     ],
     generationConfig: {
@@ -35,7 +31,6 @@ Return the result as a JSON array with objects containing "transactionId" and "p
         items: {
           type: "OBJECT",
           properties: {
-            transactionId: { type: "STRING" },
             prediction: { type: "STRING" },
           },
         },
@@ -57,8 +52,6 @@ Return the result as a JSON array with objects containing "transactionId" and "p
     );
 
     const data: GeminiResponse = await response.json();
-    console.log(data);
-
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
     const parsed: TransactionPrediction[] = JSON.parse(text);
 
