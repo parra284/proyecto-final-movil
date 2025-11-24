@@ -1,5 +1,7 @@
 import { Button } from "@/components/Button";
+import { ModalScanner } from "@/components/ModalScanner"; // Importa tu ModalScanner
 import { CATEGORIES } from "@/types/categories";
+import { Transaction } from "@/types/data.types";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { Modal, StyleSheet, Text, TextInput, View } from "react-native";
@@ -22,6 +24,7 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
   const [expenseType, setExpenseType] = useState("");
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   const handleSave = async () => {
     await onSubmit({
@@ -39,6 +42,15 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
     setExpenseType("");
   };
 
+  // Función para rellenar datos desde OCR
+  const handleScanFinish = (data: Transaction) => {
+    setDescription(data.description);
+    setValue(data.value.toString());
+    if (data.expensetype) setExpenseType(data.expensetype.name);
+    if (data.category) setCategory(data.category);
+    setScannerVisible(false);
+  };
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
@@ -46,6 +58,10 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
           <Text style={styles.title}>
             {presetType === "income" ? "Agregar ingreso" : "Registrar gasto"}
           </Text>
+
+          <Button variant="outline" onClick={() => setScannerVisible(true)} fullWidth>
+            Escanear factura
+          </Button>
 
           <TextInput
             placeholder="Descripción"
@@ -62,15 +78,14 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
             onChangeText={setValue}
           />
 
-            <Picker
+          <Picker
             selectedValue={category}
             onValueChange={(v: any) => setCategory(v)}
-            >
+          >
             {CATEGORIES[presetType].map((c) => (
-                <Picker.Item key={c.key} label={c.key} value={c.key} />
+              <Picker.Item key={c.key} label={c.key} value={c.key} />
             ))}
-            </Picker>
-
+          </Picker>
 
           {presetType === "expense" && (
             <TextInput
@@ -85,6 +100,13 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
             <Button variant="outline" onClick={onClose} fullWidth>Cancelar</Button>
             <Button variant="primary" onClick={handleSave} fullWidth>Guardar</Button>
           </View>
+
+          {/* ModalScanner */}
+          <ModalScanner
+            visible={scannerVisible}
+            onClose={() => setScannerVisible(false)}
+            onFinish={handleScanFinish}
+          />
         </View>
       </View>
     </Modal>
