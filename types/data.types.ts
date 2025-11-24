@@ -6,6 +6,20 @@ export interface UserStats {
   balance: number;
 }
 
+export interface UserStatsCategories {
+  income: number;
+  expense: number;
+  categories: {
+    income: CategoryTotal[];
+    expense: CategoryTotal[];
+  };
+}
+
+export interface CategoryTotal {
+  key: string;   // nombre de la categoría (ej: "Alimentos")
+  total: number; // total gasto/ingreso de esa categoría
+}
+
 export interface TransactionType {
     id: string,
     name: string

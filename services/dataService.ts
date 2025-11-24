@@ -120,21 +120,49 @@ export const fetchTransactions = async (
 };
 
 
-export const fetchUserStats = async (userId: string) => {
-  const { data, error } = await supabase.rpc("calculate_user_stats", {
-    uid: userId,
-  });
+export const fetchUserStats = async (userId: string, month?: number) => {
+  const { data, error } = month
+    ? await supabase.rpc("calculate_user_stats_month", { uid: userId, month })
+    : await supabase.rpc("calculate_user_stats", { uid: userId });
 
   if (error) throw error;
 
-  const stats = data[0]; 
-
+  const stats = data[0];
   return {
     income: Number(stats.income),
     expense: Number(stats.expense),
     balance: Number(stats.balance),
   };
 };
+
+export const fetchUserStatsByCategory = async (userId: string, month: number) => {
+  const { data, error } = await supabase.rpc(
+    "calculate_user_stats_month_by_category",
+    { uid: userId, month }
+  );
+
+  if (error) throw error;
+ 
+  // Totales globales vienen con category = "TOTAL"
+  const totals = data.find((row: any) => row.category === "TOTAL");
+
+  const categories = data.filter((row: any) => row.category !== "TOTAL");
+
+  return {
+    totals: {
+      income: Number(totals.income),
+      expense: Number(totals.expense),
+      balance: Number(totals.balance),
+    },
+    categories: categories.map((c: any) => ({
+      category: c.category,
+      type: c.type,
+      total: Number(c.total),
+    })),
+  };
+};
+
+
 
 export const uploadTransaction = async (
   userId: string,

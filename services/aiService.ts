@@ -57,6 +57,7 @@ Return the result as a JSON array with objects containing "transactionId" and "p
     );
 
     const data: GeminiResponse = await response.json();
+    console.log(data);
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
     const parsed: TransactionPrediction[] = JSON.parse(text);
