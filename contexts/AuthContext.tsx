@@ -2,6 +2,7 @@ import {
   createProfile,
   fetchProfile,
   signIn,
+  signOut,
   signUp,
   updateUserAvatar,
   updateUserProfileData
@@ -12,6 +13,7 @@ import { createContext, useState } from "react";
 interface AuthContextProps {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   register: (user: User, password: string) => Promise<void>;
   updateImage: (avatarUri: string) => Promise<void>;
   updateData: (profileData: Partial<User>) => Promise<void>;
@@ -52,9 +54,13 @@ export const AuthProvider = ({ children }: any) => {
       }));
   }
 
+  const logout = async() => {
+    await signOut();
+    setUser(null)
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, updateImage, updateData }}>
+    <AuthContext.Provider value={{ user, login, register, updateImage, updateData, logout }}>
       {children}
     </AuthContext.Provider>
   );

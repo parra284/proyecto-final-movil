@@ -4,11 +4,9 @@ import {
   Bell,
   Camera,
   ChevronRight,
-  Globe,
   LogOut,
   Moon,
-  Target,
-  User,
+  User
 } from "lucide-react-native";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -27,9 +25,10 @@ import {
 import { Card } from "@/components/Card";
 import ModalCamera from "@/components/ModalCamera";
 import { AuthContext } from "@/contexts/AuthContext";
+import { router } from 'expo-router';
 
 const Profile = () => {
-  const { user, updateImage, updateData } = useContext(AuthContext);
+  const { user, updateImage, updateData, logout } = useContext(AuthContext);
   const [avatar, setAvatar] = useState(user?.avatar_url);
 
   const [cameraVisible, setCameraVisible] = useState(false);
@@ -62,23 +61,7 @@ const Profile = () => {
       subtitle: "Datos personales",
       color: "#00C48C",
       action: () => setEditModalVisible(true),
-    },
-    {
-      id: 2,
-      icon: Target,
-      title: "Metas financieras",
-      subtitle: "Configura objetivos de ahorro",
-      color: "#FBBF24",
-      action: () => {},
-    },
-    {
-      id: 3,
-      icon: Globe,
-      title: "Moneda y región",
-      subtitle: "COP - Colombia",
-      color: "#1F2937",
-      action: () => {},
-    },
+    }
   ];
 
   const selectImage = () => {
@@ -110,9 +93,9 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Aquí conectas tu lógica real de cierre de sesión (Supabase, etc.)
-    console.log("Cerrar sesión");
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/(auth)/login")
   };
 
   return (
