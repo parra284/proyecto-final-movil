@@ -1,8 +1,10 @@
+// Intro.tsx
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import LottieView from "lottie-react-native";
 import { MotiView } from "moti";
 import React, { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Intro() {
   useEffect(() => {
@@ -66,27 +68,20 @@ export default function Intro() {
         </View>
       </MotiView>
 
-      {/* MONEDA PRINCIPAL 3D */}
+      {/* MONEDA PRINCIPAL LOTTIE */}
       <MotiView
-        from={{ translateY: -120, opacity: 0, rotate: "0deg" }}
-        animate={{ translateY: 0, opacity: 1, rotate: "360deg" }}
+        from={{ translateY: -120, opacity: 0, scale: 0.8 }}
+        animate={{ translateY: 0, opacity: 1, scale: 1 }}
         transition={{ type: "timing", duration: 900 }}
         style={styles.mainCoinWrapper}
       >
-        {/* disco sombra turquesa debajo */}
-        <View style={styles.shadowDisk} />
-
-        {/* moneda amarilla */}
-        <LinearGradient
-          colors={["#FCD34D", "#F59E0B"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.mainCoinOuter}
-        >
-          <View style={styles.mainCoinInner}>
-            <Text style={styles.mainCoinText}>K</Text>
-          </View>
-        </LinearGradient>
+        <LottieView
+          // Ajusta la ruta según donde guardaste el JSON
+          source={require("../assets/images/loCoin.json")}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
       </MotiView>
 
       {/* TEXTO LOGO */}
@@ -100,17 +95,7 @@ export default function Intro() {
         <Text style={styles.subtitle}>Control financiero inteligente</Text>
       </MotiView>
 
-      {/* BOTÓN EMPZAR */}
-      <MotiView
-        from={{ opacity: 0, translateY: 30 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: "timing", delay: 650, duration: 600 }}
-        style={styles.startButtonWrapper}
-      >
-        <Pressable style={styles.startButton} onPress={handleStart}>
-          <Text style={styles.startButtonText}>Empezar</Text>
-        </Pressable>
-      </MotiView>
+     
     </LinearGradient>
   );
 }
@@ -127,14 +112,6 @@ const styles = StyleSheet.create({
   },
 
   /* MONEDAS DECORATIVAS */
-  sideCoinBase: {
-    borderRadius: 9999,
-    borderWidth: 2,
-    borderColor: "rgba(5, 150, 105, 0.7)",
-    backgroundColor: "rgba(4, 120, 87, 0.25)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   sideCoinBig: {
     width: 46,
     height: 46,
@@ -193,50 +170,18 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
 
-  /* MONEDA PRINCIPAL */
-
+  /* MONEDA PRINCIPAL (LOTTIE) */
   mainCoinWrapper: {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 40,
   },
-  shadowDisk: {
-    position: "absolute",
-    top: 20,
-    width: 170,
-    height: 170,
-    borderRadius: 9999,
-    backgroundColor: "#006766",
-    opacity: 0.9,
-  },
-  mainCoinOuter: {
-    width: 140,
-    height: 140,
-    borderRadius: 9999,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
-  },
-  mainCoinInner: {
-    width: 104,
-    height: 104,
-    borderRadius: 9999,
-    backgroundColor: "#FDE68A",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  mainCoinText: {
-    fontSize: 54,
-    fontWeight: "800",
-    color: "#1F2937",
+  lottie: {
+    width: 220,
+    height: 220,
   },
 
   /* TEXTO CENTRAL */
-
   centerText: {
     alignItems: "center",
   },
@@ -253,8 +198,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  /* BOTÓN EMPAZAR */
-
+  /* BOTÓN EMPEZAR */
   startButtonWrapper: {
     position: "absolute",
     bottom: 80,

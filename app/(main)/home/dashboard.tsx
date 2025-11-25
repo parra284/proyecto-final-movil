@@ -69,7 +69,7 @@ export default function Dashboard() {
               {/* Ingresos */}
               <View style={styles.summaryItem}>
                 <View style={[styles.iconCircle, { backgroundColor: '#BBF7D0' }]}>
-                  <TrendingUp size={24} color="#00C48C" />
+                  <TrendingUp size={28} color="#00C48C" />
                 </View>
                 <Text style={styles.summaryValuePositive}>+${stats.income.toLocaleString("es-CO")}</Text>
                 <Text style={styles.summaryLabel}>Ingresos</Text>
@@ -78,23 +78,16 @@ export default function Dashboard() {
               {/* Gastos */}
               <View style={styles.summaryItem}>
                 <View style={[styles.iconCircle, { backgroundColor: '#FEE2E2' }]}>
-                  <ShoppingBag size={24} color="#EF4444" />
+                  <ShoppingBag size={28} color="#EF4444" />
                 </View>
                 <Text style={styles.summaryValueNeutral}>-${stats.expense.toLocaleString("es-CO")}</Text>
                 <Text style={styles.summaryLabel}>Gastos</Text>
               </View>
-
-              {/* Puntos */}
-              <View style={styles.summaryItem}>
-                <View style={[styles.iconCircle, { backgroundColor: '#FEF3C7' }]}>
-                  <Text style={{ fontSize: 22 }}>⭐</Text>
-                </View>
-                <Text style={styles.summaryValuePoints}>+25</Text>
-                <Text style={styles.summaryLabel}>Puntos</Text>
-              </View>
             </View>
           </View>
         </Card>
+
+
 
         {/* Transactions */}
         <View style={styles.transactionsHeaderWrapper}>
@@ -105,76 +98,48 @@ export default function Dashboard() {
         </View>
 
         <View style={styles.transactionsList}>
-          {transactions.map((transaction, index) => {
-            const isIncome = transaction.type.name === "income";
-            
-            // Color del ícono según tipo
-            const color = isIncome ? "#00C48C" : "#EF4444"; // verde ingreso / rojo gasto
+          {transactions.length === 0 ? (
+            <Text style={{ color: '#6B7280', textAlign: 'center', marginVertical: 20 }}>
+              No has tenido transacciones hoy
+            </Text>
+          ) : (
+            transactions.map((transaction, index) => {
+              const isIncome = transaction.type.name === "income";
+              const color = isIncome ? "#00C48C" : "#EF4444";
+              const tagText = isIncome ? "Ingreso" : transaction.expensetype?.name ?? "Gasto";
+              const CategoryIcon = CATEGORIES[isIncome ? "income" : "expense"]
+                .find(c => c.key === transaction.category)?.icon || ShoppingBag;
 
-            // Texto del tag
-            const tagText = isIncome
-              ? "Ingreso"
-              : transaction.expensetype?.name ?? "Gasto";
-
-            // Ícono según categoría (igual a tu código)
-            const CategoryIcon = CATEGORIES[isIncome ? "income" : "expense"]
-    .find(c => c.key === transaction.category)?.icon || ShoppingBag;
-
-
-            return (
-              <Card key={transaction.id} delay={0.4 + index * 0.1} hover>
-                <View style={styles.transactionItem}>
-
-                  {/* ICON */}
-                  <View
-                    style={[
-                      styles.transactionIconCircle,
-                      { backgroundColor: color + "20" },
-                    ]}
-                  >
-                    <CategoryIcon size={24} color={color} />
-                  </View>
-
-                  {/* INFO */}
-                  <View style={styles.transactionInfo}>
-                    <Text style={styles.transactionName} numberOfLines={1}>
-                      {transaction.description}
-                    </Text>
-
-                    <View style={styles.transactionMeta}>
-                      <Text style={styles.transactionCategory}>
-                        {transaction.category ?? "Sin categoría"}
+              return (
+                <Card key={transaction.id} delay={0.4 + index * 0.1} hover>
+                  <View style={styles.transactionItem}>
+                    <View style={[styles.transactionIconCircle, { backgroundColor: color + "20" }]}>
+                      <CategoryIcon size={24} color={color} />
+                    </View>
+                    <View style={styles.transactionInfo}>
+                      <Text style={styles.transactionName} numberOfLines={1}>
+                        {transaction.description}
                       </Text>
-
-                      {/* TAG */}
-                      <View
-                        style={[
-                          styles.transactionTag,
-                          isIncome ? styles.tagIncome : styles.tagExpense,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.tagText,
-                            isIncome ? styles.tagTextIncome : styles.tagTextExpense,
-                          ]}
-                        >
-                          {tagText}
+                      <View style={styles.transactionMeta}>
+                        <Text style={styles.transactionCategory}>
+                          {transaction.category ?? "Sin categoría"}
                         </Text>
+                        <View style={[styles.transactionTag, isIncome ? styles.tagIncome : styles.tagExpense]}>
+                          <Text style={[styles.tagText, isIncome ? styles.tagTextIncome : styles.tagTextExpense]}>
+                            {tagText}
+                          </Text>
+                        </View>
                       </View>
                     </View>
+                    <Text style={styles.transactionAmount}>
+                      ${transaction.value.toLocaleString("es-CO")} COP
+                    </Text>
                   </View>
-
-                  {/* AMOUNT */}
-                  <Text style={styles.transactionAmount}>
-                    ${transaction.value.toLocaleString("es-CO")} COP
-                  </Text>
-                </View>
-              </Card>
-            );
-          })}
+                </Card>
+              );
+            })
+          )}
         </View>
-
 
         {/* Action Buttons */}
         <View style={styles.actionsWrapper}>
@@ -236,6 +201,45 @@ export default function Dashboard() {
 /* -------------------------------------------- */
 
 const styles = StyleSheet.create({
+  summaryGrid: {
+  flexDirection: 'row',
+  justifyContent: 'space-around', // espacio uniforme entre items
+  alignItems: 'center',
+  marginTop: 8,
+},
+summaryItem: {
+    alignItems: 'center',
+    minWidth: 120, // asegura que cada item tenga espacio suficiente
+  },
+  iconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  summaryValuePositive: {
+    fontSize: 24,
+    color: '#00C48C',
+    fontWeight: '600',
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  summaryValueNeutral: {
+    fontSize: 24,
+    color: '#EF4444',
+    fontWeight: '600',
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  summaryLabel: {
+    color: '#6B7280',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+
+
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
@@ -276,43 +280,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontWeight: '600',
   },
-
-  summaryGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  summaryItem: {
-    alignItems: 'center',
-    width: '30%',
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  summaryValuePositive: {
-    fontSize: 22,
-    color: '#00C48C',
-    marginBottom: 2,
-  },
-  summaryValueNeutral: {
-    fontSize: 22,
-    color: '#111827',
-    marginBottom: 2,
-  },
   summaryValuePoints: {
     fontSize: 22,
     color: '#FBBF24',
     marginBottom: 2,
   },
-  summaryLabel: {
-    color: '#6B7280',
-    fontSize: 12,
-  },
-
   /* Transactions */
   transactionsHeaderWrapper: {
     flexDirection: 'row',

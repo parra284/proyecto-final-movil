@@ -50,15 +50,17 @@ const Predictions = () => {
             {predictions.map((prediction, index) => (
               <Card key={index} delay={index * 120} hover>
                 <View style={styles.predictionCardInner}>
-                  <View style={[styles.predictionIconBox, { backgroundColor: "#2563EB20" }]}>
-                    <AlertCircle size={26} color="#2563EB" />
+                  <View style={styles.predictionIconBox}>
+                    <AlertCircle size={28} color="#2563EB" />
                   </View>
-
                   <View style={styles.predictionTextBlock}>
                     <Text style={styles.predictionTitle}>{prediction.prediction}</Text>
+                    {/* Si quieres agregar descripción futura */}
+                    {/* <Text style={styles.predictionDescription}>{prediction.description}</Text> */}
                   </View>
                 </View>
               </Card>
+
             ))}
           </View>
         </View>
@@ -75,11 +77,47 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#F3F4F6" },
   scrollContent: { paddingHorizontal: 20, paddingVertical: 20 },
   section: { marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: "600", color: "#111827", marginBottom: 10 },
-  cardsStack: { gap: 10 },
-  predictionCardInner: { paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  predictionIconBox: { width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 16 },
+  cardsStack: { gap: 12 },
+
+  predictionCardInner: {
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4, // para Android
+  },
+
+  predictionIconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#2563EB20", // azul claro semi-transparente
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+
   predictionTextBlock: { flex: 1, minWidth: 0 },
-  predictionTitle: { fontSize: 14, fontWeight: "600", color: "#111827", flexShrink: 1 },
-  predictionDescription: { fontSize: 13, color: "#4B5563", lineHeight: 18 },
+
+  predictionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
+    lineHeight: 20,
+  },
+
+  predictionDescription: {
+    fontSize: 13,
+    color: "#4B5563",
+    lineHeight: 18,
+    marginTop: 4,
+  },
 });
+

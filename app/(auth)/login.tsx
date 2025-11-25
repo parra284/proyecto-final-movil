@@ -4,6 +4,7 @@ import { useAsyncAction } from "@/hooks/useAsyncAction";
 import { validate } from "@/utils/auth/validate";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import LottieView from "lottie-react-native";
 import { Chrome, Lock, Mail } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useContext, useState } from "react";
@@ -13,7 +14,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function Login() {
@@ -26,7 +27,7 @@ export default function Login() {
   });
 
   const handleChange = (field: "email" | "password", value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleLogin = async () => {
@@ -50,35 +51,37 @@ export default function Login() {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      {/* Logo */}
+      {/* HERO: Lottie arriba + textos */}
       <MotiView
-        from={{ scale: 0, rotate: "-180deg" }}
-        animate={{ scale: 1, rotate: "0deg" }}
-        transition={{ duration: 800, type: "spring" }}
-        style={styles.logo}
+        from={{ opacity: 0, translateY: -20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ duration: 800, type: "timing" }}
+        style={styles.hero}
       >
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoK}>K</Text>
-        </View>
+        <LottieView
+          source={require("../../assets/images/loCoin.json")}
+          autoPlay
+          loop
+          style={styles.lottieLogo}
+        />
 
-        <Text style={styles.logoTitle}>KOINS</Text>
-        <Text style={styles.logoSubtitle}>
-          Control financiero inteligente
+        <Text style={styles.appName}>KOINS</Text>
+        <Text style={styles.heroTitle}>Bienvenido de nuevo</Text>
+        <Text style={styles.heroSubtitle}>
+          Revisa tus gastos, puntos y facturas electrónicas en un solo lugar.
         </Text>
       </MotiView>
 
-      {/* Form Card */}
+      {/* CARD DEL FORMULARIO */}
       <MotiView
-        from={{ opacity: 0, translateY: 50 }}
+        from={{ opacity: 0, translateY: 40 }}
         animate={{ opacity: 1, translateY: 0 }}
-        transition={{ delay: 300 }}
+        transition={{ delay: 250, type: "timing" }}
         style={styles.card}
       >
-        <Text style={styles.cardTitle}>
-          Iniciar sesión
-        </Text>
+        <Text style={styles.cardTitle}>Iniciar sesión</Text>
 
-        {/* Email Input */}
+        {/* Email */}
         <View style={styles.mb4}>
           <Text style={styles.label}>Correo electrónico</Text>
           <View style={styles.inputWrapper}>
@@ -95,7 +98,7 @@ export default function Login() {
           </View>
         </View>
 
-        {/* Password Input */}
+        {/* Password */}
         <View style={styles.mb6}>
           <Text style={styles.label}>Contraseña</Text>
           <View style={styles.inputWrapper}>
@@ -112,7 +115,7 @@ export default function Login() {
           </View>
         </View>
 
-        {/* Login Button */}
+        {/* Botón login */}
         <Button
           fullWidth
           variant="primary"
@@ -123,7 +126,7 @@ export default function Login() {
           Iniciar sesión
         </Button>
 
-        {/* Google Button */}
+        {/* Google */}
         <Button
           fullWidth
           variant="outline"
@@ -149,28 +152,20 @@ export default function Login() {
         </View>
       </MotiView>
 
-      {/* Decorative Elements */}
+      {/* DECORACIONES */}
       <MotiView
-        animate={{
-          translateY: [0, 10, 0],
-          rotate: ["0deg", "5deg", "0deg"],
-        }}
+        animate={{ translateY: [0, 10, 0] }}
         transition={{ duration: 3000, loop: true }}
         style={styles.decorationTop}
       />
-
       <MotiView
-        animate={{
-          translateY: [0, -10, 0],
-          rotate: ["0deg", "-5deg", "0deg"],
-        }}
+        animate={{ translateY: [0, -10, 0] }}
         transition={{ duration: 4000, loop: true }}
         style={styles.decorationBottom}
       />
     </LinearGradient>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -179,71 +174,65 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     paddingHorizontal: 24,
-    paddingTop: 64,
+    paddingTop: 48,
   },
 
-  logo: { 
-    marginBottom: 32, 
-    alignItems: "center"
-  },
-
-  logoCircle: {
-    width: 96,
-    height: 96,
-    backgroundColor: "#FBBF24",
-    borderRadius: 9999,
-    justifyContent: "center",
+  /* HERO */
+  hero: {
+    width: "100%",
+    maxWidth: 380,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
     marginBottom: 16,
   },
-
-  logoK: {
-    color: "white",
-    fontSize: 40,
-    fontWeight: "bold",
+  lottieLogo: {
+    width: 96,
+    height: 96,
+    marginBottom: 8,
   },
-
-  logoTitle: {
-    color: "white",
-    fontSize: 32,
+  appName: {
+    color: "#D1FAE5",
+    fontSize: 12,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  heroTitle: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "800",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  heroSubtitle: {
+    color: "#E5E7EB",
+    fontSize: 13,
     textAlign: "center",
   },
 
-  logoSubtitle: {
-    color: "rgba(255,255,255,0.8)",
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: 8,
-  },
-
+  /* CARD */
   card: {
     width: "100%",
-    maxWidth: 360,
-    backgroundColor: "rgba(255,255,255,0.95)",
-    padding: 32,
+    maxWidth: 380,
+    backgroundColor: "rgba(255,255,255,0.98)",
+    padding: 28,
     borderRadius: 24,
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
   },
-
   cardTitle: {
     color: "#111827",
     fontSize: 20,
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 20,
     fontWeight: "600",
   },
 
   label: {
     color: "#4B5563",
     fontSize: 14,
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   inputWrapper: {
@@ -252,14 +241,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
     justifyContent: "center",
   },
-
   inputIcon: {
     position: "absolute",
     left: 16,
     top: "50%",
     marginTop: -10,
   },
-
   input: {
     color: "#111827",
     fontSize: 16,
@@ -267,19 +254,16 @@ const styles = StyleSheet.create({
 
   mb4: { marginBottom: 16 },
   mb6: { marginBottom: 24 },
-  mb3: { marginBottom: 12 },
 
   linksContainer: {
     alignItems: "center",
     marginTop: 8,
   },
-
   forgotPassword: {
-    color: "#00C48C",
+    color: "#00F5B1",
     fontSize: 14,
     marginBottom: 8,
   },
-
   switchAuth: {
     color: "#4B5563",
     fontSize: 14,
@@ -287,17 +271,16 @@ const styles = StyleSheet.create({
 
   decorationTop: {
     position: "absolute",
-    top: 80,
-    right: 32,
+    top: 70,
+    right: 22,
     width: 64,
     height: 64,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 9999,
   },
-
   decorationBottom: {
     position: "absolute",
-    bottom: 128,
+    bottom: 110,
     left: 32,
     width: 48,
     height: 48,
