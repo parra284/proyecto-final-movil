@@ -105,3 +105,59 @@ export const updateUserAvatar = async (user: User, avatarUri: string) => {
 
   return { ...user, avatar_url };
 };
+
+// Login o registro con Google
+export const signInWithGoogle = async (accessToken: string) => {
+  try {
+    // 1. Obtener info del usuario desde Google
+    const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const googleUser = await res.json();
+
+    console.log(googleUser);
+
+    if (!googleUser.email) throw new Error("No se pudo obtener el email del usuario");
+
+    const userData: User = {
+      id: "",
+      email: googleUser.email,
+      name: googleUser.given_name || "",
+      last_name: googleUser.family_name || "",
+      avatar_url: googleUser.picture || "",
+    };
+
+    // 2. Revisar si el usuario ya existe en Supabase Auth
+    let { data: existingUser } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', userData.email)
+      .single();
+
+    let userId: string;
+
+    if (!existingUser) {
+      // 3a. Si no existe, creamos usuario en Auth (sin password)
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: Math.random().toString(36).slice(-8), // password temporal
+        options: { data: { name: userData.name, last_name: userData.last_name } },
+      });
+
+      if (error) throw error;
+      userId = data.user?.id!;
+      // 3b. Crear perfil en tabla profiles
+      await createProfile(userData, userId);
+    } else {
+      // 4. Si existe, actualizamos datos del perfil
+      userId = existingUser.id;
+      await updateUserProfileData(existingUser, userData);
+    }
+
+    // 5. Devolver info del usuario
+    return { ...userData, id: userId };
+  } catch (error) {
+    console.error('Error signInWithGoogle:', error);
+    throw error;
+  }
+};

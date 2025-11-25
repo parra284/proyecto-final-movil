@@ -16,8 +16,8 @@ export const getTransactionPredictions = async (
     .join("\n");
 
   // Prompt actualizado para generar insights generales
-  const prompt = `Analyze the following transactions and provide 3 to 5 interesting insights or recommendations about the user's spending habits, saving opportunities, or patterns. 
-Return the result as a JSON array of objects with a "prediction" field only. Do not tie predictions to individual transactions.\n\n${transactionText}`;
+const prompt = `Analyze the following transactions and give 3 to 5 short insights about the user's spending habits, savings, or patterns. 
+Return a JSON array with objects containing only a "prediction" field. Do not reference individual transactions.\n\n${transactionText}`;
 
   const body = {
     contents: [
@@ -53,6 +53,10 @@ Return the result as a JSON array of objects with a "prediction" field only. Do 
     );
 
     const data: GeminiResponse = await response.json();
+
+    console.log(data);
+    
+
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
     const parsed: TransactionPrediction[] = JSON.parse(text);
 
@@ -72,29 +76,17 @@ export const parseTextToTransactionData = async (
   const allowedCategories = CATEGORIES.expense.map((c) => c.key);
 
   const prompt = `
-You will receive a raw text that may describe a purchase, payment, or expense.
+Extract from the text the following fields if possible:
 
-Extract ONLY the following fields if they can be inferred:
+- description: short description of the item or service.
+- value: numeric amount. Convert "25k" to 25000.
+- category: one of the following Spanish categories: ${allowedCategories.join(", ")}.
+  Use "Otros gastos" if unsure.
 
-- "description": a short description of the item or service.
-- "value": the monetary amount as a number. Convert formats like "25k" to 25000.
-- "category": MUST be exactly one of the following Spanish categories:
+Return ONLY a single JSON object like:
+{"description":"...", "value":12345, "category":"..."}
 
-${allowedCategories.map((c) => `- ${c}`).join("\n")}
-
-Do NOT create new categories.  
-If you are unsure, use "Otros gastos".
-
-Return ONLY a JSON object in this exact form:
-{
-  "description": "...",
-  "value": 12345,
-  "category": "..."
-}
-
-If a field cannot be determined, omit it.
-
-Text to analyze:
+Text:
 """${text}"""
 `;
 

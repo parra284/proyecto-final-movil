@@ -1,5 +1,5 @@
 import { Button } from "@/components/Button";
-import { ModalScanner } from "@/components/ModalScanner"; // Importa tu ModalScanner
+import { ModalScanner } from "@/components/ModalScanner";
 import { CATEGORIES } from "@/types/categories";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
@@ -22,8 +22,8 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
   const [description, setDescription] = useState("");
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
-  const [expenseType, setExpenseType] = useState("");
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [scanned, setScanned] = useState(false); // Para saber si vino de OCR
 
   const handleSave = async () => {
     await onSubmit({
@@ -31,19 +31,16 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
       description,
       value: Number(value),
       category,
-      expenseType: presetType === "expense" ? expenseType : undefined
+      expenseType: presetType === "expense" ? (scanned ? "Factura" : "Manual") : undefined,
     });
 
     onClose();
     setDescription("");
     setValue("");
     setCategory("");
-    setExpenseType("");
+    setScanned(false);
   };
 
-  // Función para rellenar datos desde OCR
-  
-  // Ahora recibe lo que devuelve parseInvoice()
   const handleScanFinish = (data: {
     type: string;
     description: string;
@@ -55,11 +52,10 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
     setValue(data.value.toString());
 
     if (data.category) setCategory(data.category);
-    if (data.expenseType) setExpenseType(data.expenseType);
 
+    setScanned(true); // viene del escaneo
     setScannerVisible(false);
   };
-
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -69,12 +65,15 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
             {presetType === "income" ? "Agregar ingreso" : "Registrar gasto"}
           </Text>
 
-          <Button variant="outline" onClick={() => setScannerVisible(true)} fullWidth>
-            Escanear factura
-          </Button>
+          {presetType === "expense" && (
+            <Button variant="outline" onClick={() => setScannerVisible(true)} fullWidth>
+              Escanear factura
+            </Button>
+          )}
 
           <TextInput
             placeholder="Descripción"
+            placeholderTextColor="#6B7280"
             style={styles.input}
             value={description}
             onChangeText={setDescription}
@@ -82,6 +81,7 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
 
           <TextInput
             placeholder="Valor"
+            placeholderTextColor="#6B7280"
             keyboardType="numeric"
             style={styles.input}
             value={value}
@@ -91,27 +91,18 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
           <Picker
             selectedValue={category}
             onValueChange={(v: any) => setCategory(v)}
+            style={styles.picker}
           >
             {CATEGORIES[presetType].map((c) => (
               <Picker.Item key={c.key} label={c.key} value={c.key} />
             ))}
           </Picker>
 
-          {presetType === "expense" && (
-            <TextInput
-              placeholder="Tipo de gasto (opcional)"
-              style={styles.input}
-              value={expenseType}
-              onChangeText={setExpenseType}
-            />
-          )}
-
           <View style={styles.buttons}>
             <Button variant="outline" onClick={onClose} fullWidth>Cancelar</Button>
             <Button variant="primary" onClick={handleSave} fullWidth>Guardar</Button>
           </View>
 
-          {/* ModalScanner */}
           <ModalScanner
             visible={scannerVisible}
             onClose={() => setScannerVisible(false)}
@@ -142,11 +133,26 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   input: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#E5E7EB",
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
-    color: "#111827"
+    color: "#000000ff",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  picker: {
+    backgroundColor: "#E5E7EB",
+    borderRadius: 10,
+    marginBottom: 12,
+    color: "#1F2937",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
   },
   buttons: {
     flexDirection: "column",

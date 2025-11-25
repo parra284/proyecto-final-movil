@@ -31,7 +31,6 @@ export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
 
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string>("");
 
   const pickImage = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
@@ -56,7 +55,6 @@ export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
       const ocr = await MlkitOcr.detectFromUri(uri);
 
       const fullText = ocr.map((b) => b.text).join("\n");
-      setExtractedText(fullText);
 
       // 👇 AQUI EL FIX
       const parsed = await parseInvoice(fullText);
@@ -131,12 +129,6 @@ export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
           <Pressable style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
           </Pressable>
-
-          {extractedText !== "" && (
-            <Text style={styles.extracted}>
-              Extracted text:{"\n"}{extractedText}
-            </Text>
-          )}
         </View>
       </View>
     </Modal>
