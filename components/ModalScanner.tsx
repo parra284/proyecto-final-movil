@@ -1,14 +1,14 @@
-import { Transaction } from "@/types/data.types";
+import { ExtraContext } from "@/contexts/ExtraContext";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import MlkitOcr from "react-native-mlkit-ocr";
 
@@ -17,10 +17,18 @@ import MlkitOcr from "react-native-mlkit-ocr";
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onFinish: (data: Transaction) => void;
+  onFinish: (data: {
+    type: string;
+    description: string;
+    value: number;
+    category?: string;
+    expenseType?: string;
+  }) => void;
 }
 
 export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
+  const { getTransactionData } = useContext(ExtraContext);
+
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>("");
@@ -50,11 +58,12 @@ export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
       const fullText = ocr.map((b) => b.text).join("\n");
       setExtractedText(fullText);
 
-      const parsed = parseInvoice(fullText);
+      // 👇 AQUI EL FIX
+      const parsed = await parseInvoice(fullText);
 
-      onFinish(parsed);
-
-      console.log(parsed);
+      if (parsed) {
+        onFinish(parsed); // ahora sí recibe un objeto real, no una Promise
+      }
 
       setLoading(false);
     } catch (err) {
@@ -63,25 +72,44 @@ export const ModalScanner = ({ visible, onClose, onFinish }: Props) => {
     }
   };
 
+
   // -------------------------
   // Lógica para extraer datos
   // -------------------------
-  const parseInvoice = (text: string): Transaction => {
-    // Buscar valor tipo $45.900 o 45.900
-    const valueMatch = text.match(/(\$)?\s?(\d{2,}[.,]\d{2,})/);
+  const parseInvoice = async (
+    text: string
+  ): Promise<{
+    type: string;
+    description: string;
+    value: number;
+    category: string;
+    expenseType: string;
+  } | null> => {
+    if (!text || text.trim().length === 0) return null;
 
-    const description = text.split("\n")[0] ?? "Purchase";
+    try {
+      // 🔥 Llamamos a la IA para obtener description, value y category
+      const aiData = await getTransactionData(text);
 
-    return {
-      id: crypto.randomUUID(),
-      user_id: "USER123", // <-- o tu user real
-      type: { id: "1", name: "expense" },
-      expensetype: { id: "F1", name: "Factura" },
-      description: description,
-      category: "General",
-      value: valueMatch ? Number(valueMatch[2].replace(",", ".")) : 0,
-      created_at: new Date(),
-    };
+      return {
+        type: "expense",
+        description: aiData.description || "Purchase",
+        value: aiData.value || 0,
+        category: aiData.category || "General",
+        expenseType: "Factura",
+      };
+    } catch (error) {
+      console.error("Error in parseInvoice:", error);
+
+      // fallback seguro si algo falla
+      return {
+        type: "expense",
+        description: "Purchase",
+        value: 0,
+        category: "General",
+        expenseType: "Factura",
+      };
+    }
   };
 
   return (

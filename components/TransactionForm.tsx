@@ -1,7 +1,6 @@
 import { Button } from "@/components/Button";
 import { ModalScanner } from "@/components/ModalScanner"; // Importa tu ModalScanner
 import { CATEGORIES } from "@/types/categories";
-import { Transaction } from "@/types/data.types";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { Modal, StyleSheet, Text, TextInput, View } from "react-native";
@@ -43,13 +42,24 @@ export default function TransactionForm({ visible, onClose, onSubmit, presetType
   };
 
   // Función para rellenar datos desde OCR
-  const handleScanFinish = (data: Transaction) => {
+  
+  // Ahora recibe lo que devuelve parseInvoice()
+  const handleScanFinish = (data: {
+    type: string;
+    description: string;
+    value: number;
+    category?: string;
+    expenseType?: string;
+  }) => {
     setDescription(data.description);
     setValue(data.value.toString());
-    if (data.expensetype) setExpenseType(data.expensetype.name);
+
     if (data.category) setCategory(data.category);
+    if (data.expenseType) setExpenseType(data.expenseType);
+
     setScannerVisible(false);
   };
+
 
   return (
     <Modal visible={visible} transparent animationType="slide">
